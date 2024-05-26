@@ -22,7 +22,9 @@
     "VanillaInventoryCodeHooksMixin"
   ],
   "client": [
+    "AbstractContainerScreenMixin",
     "ClientLevelMixin",
+    "GuiMixin",
     "LivingEntityRendererMixin"
   ],
   "injectors": {

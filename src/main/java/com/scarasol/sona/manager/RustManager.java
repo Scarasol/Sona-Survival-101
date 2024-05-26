@@ -1,6 +1,7 @@
 package com.scarasol.sona.manager;
 
 import com.scarasol.sona.configuration.CommonConfig;
+import com.scarasol.sona.item.IRustItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -244,5 +245,20 @@ public class RustManager {
             level.addParticle(particleType, x + 0.13124999403953552 + 0.737500011920929 * (double)random.nextFloat(), y + d + (double)random.nextFloat() * (1.0 - d), z + 0.13124999403953552 + 0.737500011920929 * (double)random.nextFloat(), d4, d5, d6);
             level.playSound(null, x, y, z, soundEvent, SoundSource.PLAYERS, 1, 1);
         }
+    }
+
+    public static void changeRustModel(ItemStack itemStack){
+        if (itemStack.getItem() instanceof IRustItem && canBeRust(itemStack)){
+            if (getRust(itemStack) > 70){
+                itemStack.getOrCreateTag().putInt("CustomModelData", 1);
+            }else {
+                itemStack.getOrCreateTag().putInt("CustomModelData", 0);
+            }
+        }
+    }
+
+    public static void changeRustModel(Object object){
+        if (object instanceof ItemStack itemStack)
+            changeRustModel(itemStack);
     }
 }

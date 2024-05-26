@@ -89,8 +89,12 @@ public abstract class ItemStackMixin extends net.minecraftforge.common.capabilit
 
     @Inject(method = "inventoryTick", at = @At("HEAD"))
     private void onInventoryTick(Level level, Entity entity, int slot, boolean selected, CallbackInfo ci){
-        if (CommonConfig.ROT_OPEN.get() && !level.isClientSide())
+        if (level.isClientSide())
+            return;
+        if (CommonConfig.ROT_OPEN.get())
             RotManager.rotTick(this, entity, slot, level.getBiome(entity.getOnPos()).value().getBaseTemperature() / 2 + 0.6);
+        if (CommonConfig.RUST_OPEN.get())
+            RustManager.changeRustModel(this);
     }
 
     @Inject(method = "useOn", at = @At("RETURN"))
