@@ -19,7 +19,7 @@ public class ItemMarkHandler {
     private static final ResourceLocation MILD = new ResourceLocation("sona:textures/screens/mild.png");
     private static final ResourceLocation BAD = new ResourceLocation("sona:textures/screens/bad.png");
     private static final ResourceLocation AWFUL = new ResourceLocation("sona:textures/screens/awful.png");
-
+    private static final ResourceLocation WAXED = new ResourceLocation("sona:textures/screens/waxed.png");
 
     public static void renderMark(PoseStack poseStack, Slot slot) {
         if (!slot.hasItem())
@@ -72,6 +72,10 @@ public class ItemMarkHandler {
         }
         RenderSystem.setShaderColor(1, 1, 1, 1);
         Gui.blit(poseStack, x, y, 0, 0, 8, 8, 8, 8);
+        if (RustManager.isWaxed(itemStack)){
+            RenderSystem.setShaderTexture(0, WAXED);
+            Gui.blit(poseStack, x, y + 8, 0, 0, 8, 8, 8, 8);
+        }
         poseStack.popPose();
     }
 }
