@@ -210,7 +210,7 @@ public class CommonConfig {
                 Format: "minecraft:entity.generic.explode, 3" ("" required) means that the mobs within (3 + 1) * (0.3 * FOLLOW_RANGE) are attracted to the sound.
                 Format: "$chest, 1" ("" required) means that sounds whose name contain "chest" will attract the mobs.
                 """)
-                .define("Sound WhiteList", Arrays.asList("survivalkit:crate, 1", "minecraft:entity.generic.explode, 3", "$chest, 0"), Objects::nonNull);
+                .define("Sound WhiteList", Arrays.asList("sona:crate, 1", "minecraft:entity.generic.explode, 3", "$chest, 0"), Objects::nonNull);
         SOUND_ATTRACTED_MOB_WHITELIST = BUILDER.comment("""
                 The mobs will be attracted by sound.
                 Format: "minecraft:zombie" ("" required)
@@ -233,14 +233,14 @@ public class CommonConfig {
                 .defineInRange("Loot Container Locked Percent", 20, 0D, 100D);
         LOCK_BREAKER = BUILDER.comment("""
                 The Items can break the lock.
-                Format: "zombiekit:iron_crowbar, 25" ("" required) means that iron_crowbar has a 25% chance of opening locked chests every time right click locked container.
+                Format: "zombiekit:crowbar, 30" ("" required) means that iron_crowbar has a 30% chance of opening locked chests every time right click locked container.
                 """)
-                .define("Unlock Items", new ArrayList<>());
+                .define("Unlock Items", Arrays.asList("zombiekit:crowbar, 30", "zombiekit:netherite_crowbar, 70"), Objects::nonNull);
         LOCK_WHITELIST_OPEN = BUILDER.comment("Whether only loot containers with the loot table in the whitelist will be locked.")
                 .define("Lock Table Whitelist Mode Open", false);
         LOCK_WHITELIST = BUILDER.comment("""
                 The Loot Table will be locked.
-                Format: "chests/end_city_treasure" or "zombiekit:chests/tools" ("" required)
+                Format: "chests/end_city_treasure" or "zombiekit:chests/tool" ("" required)
                 """)
                 .define("Lock Table Whitelist", new ArrayList<>());
         BUILDER.pop();
