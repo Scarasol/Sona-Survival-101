@@ -139,9 +139,7 @@ public class InfectionManager {
         if (flag){
             if (!(target instanceof Player || CommonConfig.SUSCEPTIBLE_POPULATION.get().contains(ForgeRegistries.ENTITIES.getKey(target.getType()).toString())))
                 return;
-            if (target instanceof ILivingEntityAccessor survivalEntity){
-                infectionCalculate(target);
-            }
+            infectionCalculate(target);
         }
     }
 
