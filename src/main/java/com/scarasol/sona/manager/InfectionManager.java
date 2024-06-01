@@ -71,7 +71,7 @@ public class InfectionManager {
             return;
         if (livingEntity instanceof ILivingEntityAccessor livingEntityAccessor){
             if (livingEntityAccessor.getInfectionLevel() >= 100){
-                livingEntity.hurt(new DamageSource("infection"), 999999);
+                livingEntity.hurt(new DamageSource("infection").bypassArmor(), 999999);
             }else if (livingEntityAccessor.getInfectionLevel() > 90){
                 livingEntity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20, 1, false, false));
                 livingEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 0, false, false));

@@ -131,7 +131,7 @@ public class InjuryManager {
             float injury = getInjury(livingEntityAccessor);
             float bandage = getBandage(livingEntityAccessor);
             if (injury <= 0) {
-                livingEntity.hurt(new DamageSource("injury"), 999999);
+                livingEntity.hurt(new DamageSource("injury").bypassArmor(), 999999);
             } else if (injury < 20) {
                 livingEntity.addEffect(new MobEffectInstance(SonaMobEffects.FRAGILITY.get(), 20, 5, false, false));
                 livingEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 1, false, false));

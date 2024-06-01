@@ -12,7 +12,7 @@ public class Immunity extends MobEffectBase{
     @Override
     public void applyEffectTick(LivingEntity entity, int amplifier) {
         if (amplifier >= 3){
-            entity.hurt(new DamageSource("immunity"), 999999);
+            entity.hurt(new DamageSource("immunity").bypassArmor(), 999999);
         }
     }
 
