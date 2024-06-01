@@ -31,7 +31,7 @@ public class SoundDecoy extends Mob {
 
     public SoundDecoy(EntityType<? extends Mob> entityType, Level level, int amplifier) {
         super(entityType, level);
-        life = 100;
+        life = 100 * (amplifier + 1);
         this.amplifier = amplifier;
         this.setNoGravity(true);
         this.setNoAi(true);
