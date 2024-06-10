@@ -188,7 +188,7 @@ public class CommonConfig {
                 Format: "minecraft:quartz, 30, 10" ("" required) means that using quartz consumes 10 of its durability (If the item isn't damageable item it will be consumed directly) and removes 30 of rust.
                 You need to hold your item need to be descaled in your mainhand with rust removal item in offhand and right click with shift.
                 """)
-                .define("Rust Removal Item", Arrays.asList("minecraft:quartz, 30, 1"), Objects::nonNull);
+                .define("Rust Removal Item", Arrays.asList("zombiekit:sandpaper, 20, 1", "create:sand_paper, 20, 1", "create:red_sand_paper, 20, 1"), Objects::nonNull);
         WAX_ITEM = BUILDER.comment("""
                 Items that can prevent rusting.
                 Format: "minecraft:honeycomb, 10" ("" required) means that using honeycomb consumes 10 of its durability (If the item isn't damageable item it will be consumed directly) to wax item.
