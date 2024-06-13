@@ -13,6 +13,6 @@ public class PhysicalEffect extends MobEffectBase{
 
     @Override
     public List<ItemStack> getCurativeItems() {
-        return new ArrayList();
+        return new ArrayList<>();
     }
 }
