@@ -9,6 +9,7 @@ import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.accessor.ICompoundContainerAccessor;
 import com.scarasol.sona.accessor.ILivingEntityAccessor;
 import com.scarasol.sona.manager.*;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -113,14 +114,6 @@ public class ManagerEventHandler {
             return;
         if (CommonConfig.INJURY_OPEN.get() && CommonConfig.HEAL_WHILE_SLEEP.get() && !event.updateWorld() && player instanceof ILivingEntityAccessor survivalEntity) {
             InjuryManager.healBySleep(survivalEntity);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onChat(ServerChatEvent event) {
-        Player player = event.getPlayer();
-        if (CommonConfig.INFECTION_OPEN.get() && CommonConfig.BLUR_MESSAGE.get() && player instanceof ILivingEntityAccessor survivalEntity) {
-            event.setComponent(new TextComponent(InfectionManager.blurMessage(survivalEntity, event.getMessage())));
         }
     }
 

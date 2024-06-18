@@ -3,6 +3,10 @@ package com.scarasol.sona.manager;
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.accessor.ILivingEntityAccessor;
 import com.scarasol.sona.init.SonaMobEffects;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -180,10 +184,9 @@ public class InfectionManager {
         }
     }
 
-    public static String blurMessage(ILivingEntityAccessor player, String str){
+    public static void blurMessage(ILivingEntityAccessor player, BaseComponent component){
         if (player.getInfectionLevel() > 70){
-            str = "§k" + str;
+                component.withStyle(ChatFormatting.OBFUSCATED);
         }
-        return str;
     }
 }
