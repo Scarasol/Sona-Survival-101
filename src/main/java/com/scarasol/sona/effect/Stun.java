@@ -23,7 +23,7 @@ public class Stun extends PhysicalEffect{
         super.addAttributeModifiers(entity, attributeMap, amplifier);
         if (entity instanceof Player){
             if (!entity.level.isClientSide() && entity.getServer() != null)
-                entity.getServer().getCommands().performCommand(entity.createCommandSourceStack().withSuppressedOutput().withPermission(4), "playsound survivalkit:tinnitus player @s");
+                entity.getServer().getCommands().performCommand(entity.createCommandSourceStack().withSuppressedOutput().withPermission(4), "playsound sona:tinnitus player @s");
         }
     }
 

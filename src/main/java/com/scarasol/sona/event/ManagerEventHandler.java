@@ -230,7 +230,7 @@ public class ManagerEventHandler {
                     itemStack.shrink(1);
                 }
                 level.levelEvent(2001, event.getHitVec().getBlockPos(), Block.getId(blockState));
-                level.playSound(null, event.getPlayer(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("survivalkit:crate")), SoundSource.PLAYERS, 1, 1);
+                level.playSound(null, event.getPlayer(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("sona:crate")), SoundSource.PLAYERS, 1, 1);
                 player.getCooldowns().addCooldown(itemStack.getItem(), 200);
             }else if (blockEntity instanceof BaseContainerBlockEntity baseContainerBlockEntity){
                 event.setCanceled(true);

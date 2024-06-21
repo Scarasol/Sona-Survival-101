@@ -35,7 +35,7 @@ public abstract class GuiMixin extends GuiComponent {
     @Inject(method = "handleChat", at = @At(value = "HEAD"))
     private void onHandleChat(ChatType chatType, Component component, UUID uuid, CallbackInfo ci){
         Level level = Minecraft.getInstance().player.getLevel();
-        if (CommonConfig.INFECTION_OPEN.get() && CommonConfig.BLUR_MESSAGE.get() && chatType == ChatType.CHAT){
+        if (CommonConfig.INFECTION_OPEN.get() && CommonConfig.BLUR_MESSAGE.get()){
             Player player = level.getPlayerByUUID(uuid);
             if (player instanceof ILivingEntityAccessor survivalEntity && component instanceof BaseComponent baseComponent)
                 InfectionManager.blurMessage(survivalEntity, baseComponent);
