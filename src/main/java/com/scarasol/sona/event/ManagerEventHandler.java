@@ -42,6 +42,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.*;
 import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -85,16 +86,17 @@ public class ManagerEventHandler {
 
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onDeath(LivingDeathEvent event) {
         LivingEntity livingEntity = event.getEntityLiving();
         if (livingEntity == null || livingEntity.getLevel().isClientSide())
             return;
-        if (livingEntity instanceof Player && !livingEntity.getLevel().isClientSide()) {
+        if (livingEntity instanceof Player player && !livingEntity.getLevel().isClientSide()) {
             if (livingEntity instanceof ILivingEntityAccessor survivalEntity) {
                 InfectionManager.init(survivalEntity);
                 InjuryManager.init(survivalEntity);
             }
+            DeathManager.KeepItem(player);
         }
         if (livingEntity instanceof Villager && event.getSource().getDirectEntity() instanceof Zombie)
             return;
@@ -105,6 +107,11 @@ public class ManagerEventHandler {
                 }
             }
         }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        DeathManager.respawnItem(event.getPlayer());
     }
 
     @SubscribeEvent
@@ -128,6 +135,8 @@ public class ManagerEventHandler {
 
     @SubscribeEvent
     public static void onOpen(PlayerContainerEvent.Open event) {
+        if (!CommonConfig.ROT_OPEN.get())
+            return;
         AbstractContainerMenu abstractContainerMenu = event.getContainer();
         double containerMultiplier = 1;
         double temperature = event.getPlayer().getLevel().getBiome(event.getPlayer().getOnPos()).value().getBaseTemperature() / 2 + 0.6;
@@ -153,6 +162,8 @@ public class ManagerEventHandler {
 
     @SubscribeEvent
     public static void onClose(PlayerContainerEvent.Close event) {
+        if (!CommonConfig.ROT_OPEN.get())
+            return;
         AbstractContainerMenu abstractContainerMenu = event.getContainer();
         RotManager.rotTimeUpdate(abstractContainerMenu.slots, abstractContainerMenu.slots.size() - event.getPlayer().getInventory().items.size(), event.getPlayer().getLevel().getGameTime());
     }

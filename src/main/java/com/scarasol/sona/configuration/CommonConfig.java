@@ -70,6 +70,9 @@ public class CommonConfig {
     public static ForgeConfigSpec.ConfigValue<Boolean> LOCK_WHITELIST_OPEN;
     public static ForgeConfigSpec.ConfigValue<List<String>> LOCK_WHITELIST;
 
+    public static ForgeConfigSpec.ConfigValue<Boolean> ARMOR_KEEP;
+    public static ForgeConfigSpec.ConfigValue<List<String>> KEEP_WHITELIST;
+
 
     static {
         BUILDER.push("Infection System");
@@ -224,6 +227,13 @@ public class CommonConfig {
                 .define("Attracted Mob BlackList", new ArrayList<>());
         SPRINT_SOUND = BUILDER.comment("Whether the sprint attracts the mobs.")
                 .define("Sprint Sound", true);
+        BUILDER.pop();
+
+        BUILDER.push("Inventory Keep");
+        ARMOR_KEEP = BUILDER.comment("Whether or not the player keeps the items in the armor slots after death.")
+                .define("Armor Keep", false);
+        KEEP_WHITELIST = BUILDER.comment("Items kept after death.")
+                .define("Keep Whitelist", new ArrayList<>());
         BUILDER.pop();
 
         BUILDER.push("Misc");
