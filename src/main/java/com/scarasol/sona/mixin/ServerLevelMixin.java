@@ -29,7 +29,7 @@ public abstract class ServerLevelMixin extends Level {
 
     @Inject(method = "playSound(Lnet/minecraft/world/entity/player/Player;DDDLnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V", at = @At("RETURN"))
     private void onPlaySound(Player player, double x, double y, double z, SoundEvent soundEvent, SoundSource soundSource, float p_8681_, float p_8682_, CallbackInfo ci){
-        if (!SoundManager.isSoundOpen())
+        if (!SoundManager.isSoundOpen() || soundEvent == null)
             return;
         int index = SoundManager.getIndex(soundEvent.getLocation().toString());
         if (index != -1)
@@ -38,7 +38,7 @@ public abstract class ServerLevelMixin extends Level {
 
     @Inject(method = "playSound(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V", at = @At("RETURN"))
     private void onPlaySound(Player player, Entity entity, SoundEvent soundEvent, SoundSource soundSource, float p_8693_, float p_8694_, CallbackInfo ci){
-        if (!SoundManager.isSoundOpen())
+        if (!SoundManager.isSoundOpen() || soundEvent == null)
             return;
         int index = SoundManager.getIndex(soundEvent.getLocation().toString());
         if (index != -1)

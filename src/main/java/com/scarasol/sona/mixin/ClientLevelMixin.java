@@ -26,7 +26,7 @@ public abstract class ClientLevelMixin extends Level {
 
     @Inject(method = "playLocalSound(DDDLnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FFZ)V", at = @At("RETURN"))
     private void onPlayLocalSound(double x, double y, double z, SoundEvent soundEvent, SoundSource soundSource, float p_104605_, float p_104606_, boolean p_104607_, CallbackInfo ci){
-        if (!SoundManager.isSoundOpen())
+        if (!SoundManager.isSoundOpen() || soundEvent == null)
             return;
         int index = SoundManager.getIndex(soundEvent.getLocation().toString());
         if (index != -1){
