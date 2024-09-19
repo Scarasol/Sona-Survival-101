@@ -40,7 +40,7 @@ public abstract class BaseContainerBlockEntityMixin extends BlockEntity implemen
     @Override
     @Unique
     public void breakLockKey() {
-        if (ModList.get().isLoaded("lootr"))
+        if (ModList.get().isLoaded("lootr") && this.getType().toString().contains("lootr"))
             return;
         this.lockKey = LockCode.NO_LOCK;
         getTileData().remove("Lock");
@@ -59,7 +59,7 @@ public abstract class BaseContainerBlockEntityMixin extends BlockEntity implemen
     @Override
     @Unique
     public boolean isLocked(Player player){
-        if (ModList.get().isLoaded("lootr")){
+        if (ModList.get().isLoaded("lootr") && this.getType().toString().contains("lootr")){
             return isLocked() && !containsPlayer(player, saveWithoutMetadata().getList("LootrOpeners", Tag.TAG_INT_ARRAY));
         }else{
             return isLocked();
@@ -88,7 +88,7 @@ public abstract class BaseContainerBlockEntityMixin extends BlockEntity implemen
                 isLocked = true;
                 lockContainer(compoundTag, uuid);
             }
-            if (ModList.get().isLoaded("lootr") && getLevel() != null && getLevel().isClientSide())
+            if (ModList.get().isLoaded("lootr") && getLevel() != null && getLevel().isClientSide() && this.getType().toString().contains("lootr"))
                 NetworkHandler.PACKET_HANDLER.sendToServer(new LockPacket(getBlockPos(), uuid, isLocked));
         }
     }
