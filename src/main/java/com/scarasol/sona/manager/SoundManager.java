@@ -15,6 +15,7 @@ import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +44,9 @@ public class SoundManager {
     }
 
     public static boolean isSoundAttractedMob(Mob mob){
-        if (CommonConfig.findIndex(mob.getType().toString(), CommonConfig.SOUND_ATTRACTED_MOB_WHITELIST.get()) != -1)
+        if (CommonConfig.findIndex(ForgeRegistries.ENTITIES.getKey(mob.getType()).toString(), CommonConfig.SOUND_ATTRACTED_MOB_WHITELIST.get()) != -1)
             return true;
-        if (CommonConfig.findIndex(mob.getType().toString(), CommonConfig.SOUND_ATTRACTED_MOB_BLACKLIST.get()) != -1)
+        if (CommonConfig.findIndex(ForgeRegistries.ENTITIES.getKey(mob.getType()).toString(), CommonConfig.SOUND_ATTRACTED_MOB_BLACKLIST.get()) != -1)
             return false;
         return mob.getMobType() == MobType.UNDEAD;
     }

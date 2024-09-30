@@ -15,7 +15,7 @@ import net.minecraft.world.level.Explosion;
 
 public class Corrosion extends PhysicalEffect{
 
-    public static final DamageSource CORRODED = new DamageSource("corroded").bypassArmor();
+    public static final DamageSource CORRODED = new DamageSource("corrosion").bypassArmor();
     public static final TagKey<Item> CORRODED_IMMUNE = ItemTags.create(new ResourceLocation("forge:corroded_immune"));
 
     public Corrosion() {
