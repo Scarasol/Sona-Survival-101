@@ -1,0 +1,35 @@
+{
+  "required": true,
+  "package": "com.scarasol.sona.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "sona.refmap.json",
+  "mixins": [
+    "AbstractContainerMenuMixin",
+    "BaseContainerBlockEntityMixin",
+    "BaseEntityBlockMixin",
+    "CompoundContainerMixin",
+    "CompoundTagMixin",
+    "HopperBlockEntityMixin",
+    "InventoryMixin",
+    "InvWrapperMixin",
+    "ItemEntityMixin",
+    "ItemStackHandlerMixin",
+    "ItemStackMixin",
+    "LivingEntityMixin",
+    "LootTableMixin",
+    "MobMixin",
+    "ServerLevelMixin",
+    "SlotMixin",
+    "VanillaInventoryCodeHooksMixin"
+  ],
+  "client": [
+    "AbstractContainerScreenMixin",
+    "ClientLevelMixin",
+    "GuiMixin",
+    "LivingEntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}
