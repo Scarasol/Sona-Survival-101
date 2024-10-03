@@ -111,7 +111,7 @@ public class RotManager {
     public static void rotInContainer(ServerPlayer serverPlayer, List<Slot> slots, int size, double containerMultiplier, long gameTime, double temperature){
         for (int i = 0; i < size; i++){
             Slot slot = slots.get(i);
-            ItemStack itemStack = slot.getItem();
+            ItemStack itemStack = slot.getItem().copy();
             if (itemStack.isEdible() && canBeRotten(itemStack)){
                 long saveTime = getRotSaveTime(itemStack);
                 if (saveTime == 0) continue;
@@ -129,8 +129,8 @@ public class RotManager {
                     putRot(itemStack, Math.max(rotValue + rotAddition, 0));
                     slot.set(itemStack);
                     syncRotValue(rotValue + rotAddition, i, false, serverPlayer);
+                    slot.setChanged();
                 }
-                slot.setChanged();
             }
         }
     }

@@ -102,8 +102,15 @@ public abstract class BaseContainerBlockEntityMixin extends BlockEntity implemen
 
     @Inject(method = "load", at = @At("HEAD"))
     private void onLoad(CompoundTag compoundTag, CallbackInfo ci){
-        lockContainer(compoundTag);
-        compoundTag.putBoolean("flag", true);
+        if (CommonConfig.LOCK_PERCENT.get() == 0){
+            if (compoundTag.contains("Lock"))
+                compoundTag.remove("Lock");
+            if (compoundTag.contains("flag"))
+                compoundTag.remove("flag");
+        }else {
+            lockContainer(compoundTag);
+            compoundTag.putBoolean("flag", true);
+        }
     }
 
 

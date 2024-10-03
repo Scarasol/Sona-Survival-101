@@ -35,6 +35,8 @@ public abstract class ItemStackMixin extends net.minecraftforge.common.capabilit
 
     @Shadow public abstract Component getHoverName();
 
+    @Shadow public abstract boolean is(Item p_150931_);
+
     protected ItemStackMixin(Class<ItemStack> baseClass) {
         super(baseClass);
     }
@@ -47,6 +49,8 @@ public abstract class ItemStackMixin extends net.minecraftforge.common.capabilit
     private static void OnTagMatches(ItemStack itemStack1, ItemStack itemStack2, CallbackInfoReturnable<Boolean> cir){
         if (!CommonConfig.ROT_STACKABLE.get() || cir.getReturnValue() || !itemStack1.isEdible() || !itemStack2.isEdible())
             return;
+        if (!itemStack1.is(itemStack2.getItem()))
+            return;
         if (tagMatchesIgnoreRot(itemStack1, itemStack2))
             cir.setReturnValue(true);
     }
@@ -54,6 +58,8 @@ public abstract class ItemStackMixin extends net.minecraftforge.common.capabilit
     @Inject(method = "matches(Lnet/minecraft/world/item/ItemStack;)Z", cancellable = true, at = @At("RETURN"))
     private void onMatches(ItemStack itemStack, CallbackInfoReturnable<Boolean> cir){
         if (!CommonConfig.ROT_STACKABLE.get() || cir.getReturnValue() || !this.isEdible() || !itemStack.isEdible())
+            return;
+        if (!this.is(itemStack.getItem()))
             return;
         if (tagMatchesIgnoreRot(this, itemStack))
             cir.setReturnValue(true);

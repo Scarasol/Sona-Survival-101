@@ -138,6 +138,8 @@ public class ManagerEventHandler {
         if (!CommonConfig.ROT_OPEN.get())
             return;
         AbstractContainerMenu abstractContainerMenu = event.getContainer();
+        if (abstractContainerMenu.slots.isEmpty())
+            return;
         double containerMultiplier = 1;
         double temperature = event.getPlayer().getLevel().getBiome(event.getPlayer().getOnPos()).value().getBaseTemperature() / 2 + 0.6;
         Container container = abstractContainerMenu.slots.get(0).container;

@@ -17,6 +17,7 @@
     "ItemStackMixin",
     "LivingEntityMixin",
     "LootTableMixin",
+    "MobMixin",
     "ServerLevelMixin",
     "SlotMixin",
     "VanillaInventoryCodeHooksMixin"
