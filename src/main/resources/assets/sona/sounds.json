@@ -1,0 +1,22 @@
+{
+  "tinnitus": {
+    "category": "player",
+    "subtitle": "subtitles.tinnitus",
+    "sounds": [
+      {
+        "name": "sona:tinnitus",
+        "stream": false
+      }
+    ]
+  },
+  "crate": {
+    "category": "player",
+    "subtitle": "subtitles.crate",
+    "sounds": [
+      {
+        "name": "sona:crate",
+        "stream": false
+      }
+    ]
+  }
+}
