@@ -36,12 +36,18 @@ public class InfectionManager {
     }
 
     public static void addInfection(ILivingEntityAccessor livingEntity, float addition){
+        if (addition > 0)
+            addition = addition * CommonConfig.INFECTION_WEIGHT.get().floatValue();
+        addActualInfection(livingEntity, addition);
+    }
+
+    public static void addActualInfection(ILivingEntityAccessor livingEntity, float addition){
         float infection = addition > 0 ? Math.min(100, addition + getInfection(livingEntity)) : Math.max(0, addition + getInfection(livingEntity));
         setInfection(livingEntity, infection);
     }
 
-    public static void init(ILivingEntityAccessor livingEntity){
-        livingEntity.setInfectionLevel(0);
+    public static void init(ILivingEntityAccessor newPlayer, ILivingEntityAccessor oldPlayer){
+        newPlayer.setInfectionLevel(Math.min(oldPlayer.getInfectionLevel(), CommonConfig.INFECTION_INITIAL_VALUE.get().floatValue()));
     }
 
     public static void infectionTick(LivingEntity livingEntity){

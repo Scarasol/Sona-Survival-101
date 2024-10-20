@@ -1,5 +1,6 @@
 package com.scarasol.sona.event;
 
+import com.scarasol.sona.SonaMod;
 import com.scarasol.sona.accessor.IBaseContainerBlockEntityAccessor;
 import com.scarasol.sona.command.InfectionCommand;
 import com.scarasol.sona.command.InjuryCommand;
@@ -92,10 +93,6 @@ public class ManagerEventHandler {
         if (livingEntity == null || livingEntity.getLevel().isClientSide())
             return;
         if (livingEntity instanceof Player player && !livingEntity.getLevel().isClientSide()) {
-            if (livingEntity instanceof ILivingEntityAccessor survivalEntity) {
-                InfectionManager.init(survivalEntity);
-                InjuryManager.init(survivalEntity);
-            }
             DeathManager.KeepItem(player);
         }
         if (livingEntity instanceof Villager && event.getSource().getDirectEntity() instanceof Zombie)
@@ -111,7 +108,18 @@ public class ManagerEventHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        DeathManager.respawnItem(event.getPlayer());
+        Player player = event.getPlayer();
+        DeathManager.respawnItem(player);
+    }
+
+    @SubscribeEvent
+    public static void onClone(PlayerEvent.Clone event){
+        if (event.isWasDeath()){
+            if (event.getOriginal() instanceof ILivingEntityAccessor oldPlayer && event.getPlayer() instanceof ILivingEntityAccessor newPlayer){
+                InfectionManager.init(newPlayer, oldPlayer);
+                InjuryManager.init(newPlayer, oldPlayer);
+            }
+        }
     }
 
     @SubscribeEvent

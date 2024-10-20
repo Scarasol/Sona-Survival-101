@@ -147,10 +147,10 @@ public abstract class ItemStackMixin extends net.minecraftforge.common.capabilit
     @Inject(method = "getDestroySpeed", cancellable = true, at = @At("RETURN"))
     private void onGetDestroySpeed(BlockState blockState, CallbackInfoReturnable<Float> cir){
         float speed = cir.getReturnValue();
-        if (!CommonConfig.RUST_OPEN.get())
+        if (!CommonConfig.RUST_OPEN.get() || !RustManager.canBeRust(this))
             return;
         if (RustManager.getRust(this) >= 70) {
-            cir.setReturnValue(Math.min(1, speed * 0.8f));
+            cir.setReturnValue(Math.min(1, speed * 0.85f));
         }else if (RustManager.getRust(this) >= 40) {
             cir.setReturnValue(Math.min(1, speed * 0.95f));
         }

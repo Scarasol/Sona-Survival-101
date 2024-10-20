@@ -52,7 +52,7 @@ public class RustCommand {
     }
 
     private static void addCommand(Player player, ItemStack itemStack, double rustLevel) {
-        RustManager.addRust(itemStack, rustLevel);
+        RustManager.addActualRust(itemStack, rustLevel);
 //        RustManager.syncRustValue(RustManager.getRust(itemStack), player.getInventory().selected, true);
         player.displayClientMessage(new TranslatableComponent("command.sona.modify_rust.success", itemStack.getDisplayName(), RustManager.getRust(itemStack)), false);
     }

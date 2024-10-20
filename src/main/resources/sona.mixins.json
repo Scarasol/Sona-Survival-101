@@ -3,6 +3,7 @@
   "package": "com.scarasol.sona.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "sona.refmap.json",
+  "plugin": "com.scarasol.sona.mixin.plugin.MixinPlugin",
   "mixins": [
     "AbstractContainerMenuMixin",
     "BaseContainerBlockEntityMixin",
@@ -20,7 +21,9 @@
     "MobMixin",
     "ServerLevelMixin",
     "SlotMixin",
-    "VanillaInventoryCodeHooksMixin"
+    "VanillaInventoryCodeHooksMixin",
+    "travelersbackpack.ContainerSorterMixin",
+    "travelersbackpack.ResultSlotExtMixin"
   ],
   "client": [
     "AbstractContainerScreenMixin",

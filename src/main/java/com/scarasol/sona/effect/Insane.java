@@ -7,7 +7,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -25,8 +28,13 @@ public class Insane extends MobEffectBase{
 
     @Override
     public void applyEffectTick(@NotNull LivingEntity entity, int amplifier) {
-        if (!crazyAttackGoals.containsKey(entity) && entity instanceof Mob mob){
-            NearestAttackableTargetGoal<LivingEntity> crazyAttackGoal = new NearestAttackableTargetGoal<LivingEntity>(mob, LivingEntity.class, 5, false, false, livingEntity -> !livingEntity.equals(mob));
+        if (entity instanceof Mob mob &&!crazyAttackGoals.containsKey(mob)){
+            for (WrappedGoal goal : mob.targetSelector.getAvailableGoals()){
+                if (goal.getGoal() instanceof TargetGoal){
+                    goal.stop();
+                }
+            }
+            NearestAttackableTargetGoal<LivingEntity> crazyAttackGoal = new NearestAttackableTargetGoal<>(mob, LivingEntity.class, 5, false, false, livingEntity -> !livingEntity.equals(mob));
             mob.targetSelector.addGoal(1, crazyAttackGoal);
             mob.setTarget(null);
             crazyAttackGoals.put(mob, crazyAttackGoal);

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+
 public class CommonConfig {
 //    private static final String REGISTRY_NAME_MATCHER = "([a-z0-9_.#-]+:[a-z0-9_/.-]+)";
 
@@ -17,6 +18,8 @@ public class CommonConfig {
     public static final ForgeConfigSpec SPEC;
 
     public static ForgeConfigSpec.ConfigValue<Boolean> INFECTION_OPEN;
+    public static ForgeConfigSpec.ConfigValue<Double> INFECTION_WEIGHT;
+    public static ForgeConfigSpec.ConfigValue<Double> INFECTION_INITIAL_VALUE;
     public static ForgeConfigSpec.ConfigValue<List<String>> INFECTION_SOURCE_MOB;
     public static ForgeConfigSpec.ConfigValue<List<String>> INFECTION_SOURCE_PROJECTILE;
     public static ForgeConfigSpec.ConfigValue<List<String>> INFECTION_SOURCE_ITEM;
@@ -30,6 +33,8 @@ public class CommonConfig {
     public static ForgeConfigSpec.ConfigValue<Integer> INFECTION_Y_OFFSET;
 
     public static ForgeConfigSpec.ConfigValue<Boolean> INJURY_OPEN;
+    public static ForgeConfigSpec.ConfigValue<Double> INJURY_WEIGHT;
+    public static ForgeConfigSpec.ConfigValue<Double> INJURY_INITIAL_VALUE;
     public static ForgeConfigSpec.ConfigValue<List<String>> INJURY_EXCEPT_DAMAGESOURCE;
     public static ForgeConfigSpec.ConfigValue<List<String>> INJURY_TREATMENT_ITEM;
     public static ForgeConfigSpec.ConfigValue<Boolean> HEAL_WHILE_SLEEP;
@@ -42,6 +47,7 @@ public class CommonConfig {
     public static ForgeConfigSpec.ConfigValue<Boolean> RISE_UNDERWATER;
 
     public static ForgeConfigSpec.ConfigValue<Boolean> ROT_OPEN;
+    public static ForgeConfigSpec.ConfigValue<Double> ROT_WEIGHT;
     public static ForgeConfigSpec.ConfigValue<Boolean> ROT_STACKABLE;
     public static ForgeConfigSpec.ConfigValue<Boolean> ROT_EFFECT;
     public static ForgeConfigSpec.ConfigValue<Boolean> ROT_TEMPERATURE;
@@ -51,6 +57,7 @@ public class CommonConfig {
     public static ForgeConfigSpec.ConfigValue<List<String>> ROT_CONTAINER;
 
     public static ForgeConfigSpec.ConfigValue<Boolean> RUST_OPEN;
+    public static ForgeConfigSpec.ConfigValue<Double> RUST_WEIGHT;
     public static ForgeConfigSpec.ConfigValue<List<String>> RUST_WHITELIST;
     public static ForgeConfigSpec.ConfigValue<List<String>> RUST_BLACKLIST;
     public static ForgeConfigSpec.ConfigValue<List<String>> RUST_REMOVE_ITEM;
@@ -65,6 +72,8 @@ public class CommonConfig {
     public static ForgeConfigSpec.ConfigValue<Boolean> SPRINT_SOUND;
 
     public static ForgeConfigSpec.ConfigValue<Boolean> PHYSICAL_EFFECT_REMOVE;
+    public static ForgeConfigSpec.ConfigValue<Boolean> ENHANCED_CAMOUFLAGE;
+
     public static ForgeConfigSpec.ConfigValue<Double> LOCK_PERCENT;
     public static ForgeConfigSpec.ConfigValue<List<String>> LOCK_BREAKER;
     public static ForgeConfigSpec.ConfigValue<Boolean> LOCK_WHITELIST_OPEN;
@@ -79,6 +88,11 @@ public class CommonConfig {
         INFECTION_OPEN = BUILDER.comment("Whether to turn on the infection system." +
                 "\nThe Serverside controls the switching of the system and the Clientside controls the display of the HUD.")
                 .define("Turn on Infection System", true);
+        INFECTION_WEIGHT = BUILDER.comment("This weight is multiplied for each infection increase." +
+                "\nFor example, if this value is set to 0.5, when the infection should increase by 8, the actual increase is 8 * 0.5 = 4.")
+                .defineInRange("Infection Weight", 1.0, 0.0, 5.0);
+        INFECTION_INITIAL_VALUE = BUILDER.comment("When a player dies, if the infection value is higher than this value, the infection value will be equal to this value upon respawn.")
+                .defineInRange("Infection Initial Value", 0.0, 0.0, 100.0);
         INFECTION_SOURCE_MOB = BUILDER.comment("Mobs that cause infection (melee attacks only), including undead by default." +
                 "\nFormat: \"minecraft:zombie\" (\"\" required)")
                 .define("Source of Infection Mobs", new ArrayList<>());
@@ -115,6 +129,11 @@ public class CommonConfig {
         INJURY_OPEN = BUILDER.comment("Whether to turn on the injury system." +
                 "\nThe Serverside controls the switching of the system and the Clientside controls the display of the HUD.")
                 .define("Turn on Injury System", true);
+        INJURY_WEIGHT = BUILDER.comment("This weight is multiplied for each injury and bandage decrease." +
+                "\nFor example, if this value is set to 0.5, when the injury or bandage should decrease by 8, the actual decrease is 8 * 0.5 = 4.")
+                .defineInRange("Injury Weight", 1.0, 0.0, 5.0);
+        INJURY_INITIAL_VALUE = BUILDER.comment("When a player dies, if the injury value is lower than this value, the injury value will be equal to this value upon respawn.")
+                .defineInRange("Injury Initial Value", 100.0, 0.0, 100.0);
         HEAL_WHILE_SLEEP = BUILDER.comment("Whether to recover the injury level by sleep.")
                 .define("Heal By Sleep", true);
         HEAL_AMOUNT = BUILDER.comment("How much can injury level be recovered by once sleep.")
@@ -125,7 +144,7 @@ public class CommonConfig {
                 .defineInRange("Injury Level Threshold", 50, 0, 100);
         INJURY_EXCEPT_DAMAGESOURCE = BUILDER.comment("DamageSources that don't cause injury." +
                 "\nFormat: \"outOfWorld\" (\"\" required)")
-                .define("DamageSource Blacklist", Arrays.asList("outOfWorld", "drown", "starve", "magic", "wither", "dryout", "freeze", "inWall"), Objects::nonNull);
+                .define("DamageSource Blacklist", Arrays.asList("immunity", "injury", "infection", "genericKill", "drown", "starve", "magic", "wither", "dryOut", "freeze", "inWall", "outOfWorld"), Objects::nonNull);
         INJURY_TREATMENT_ITEM = BUILDER.comment("Items that cure injury." +
                 "\nFormat: \"minecraft:enchanted_golden_apple, 30, 50\" (\"\" required) means that using Enchanted Golden Apple will gain 30 injury level and 50 bandage level.")
                 .define("Cure Injury Items", Arrays.asList("minecraft:enchanted_golden_apple, 30, 50", "minecraft:golden_apple, 10, 20"), Objects::nonNull);
@@ -144,6 +163,9 @@ public class CommonConfig {
         ROT_OPEN = BUILDER.comment("Whether to turn on the rot system." +
                 "\nThe Serverside controls the switching of the system and the Clientside controls the display of the HUD.")
                 .define("Turn on Rot System", true);
+        ROT_WEIGHT = BUILDER.comment("This weight is multiplied for each rot increase." +
+                "\nFor example, if this value is set to 0.5, when the rot should increase by 8, the actual increase is 8 * 0.5 = 4.")
+                .defineInRange("Rot Weight", 1.0, 0.0, 5.0);
         ROT_STACKABLE = BUILDER.comment("""
                 Whether to the food can be stackable with different level of the rot.
                 If turned on, food's level of rot will be averaged based on quantity when stacked.
@@ -175,6 +197,9 @@ public class CommonConfig {
         RUST_OPEN = BUILDER.comment("Whether to turn on the rust system." +
                 "\nThe Serverside controls the switching of the system and the Clientside controls the display of the HUD.")
                 .define("Turn on Rust System", true);
+        RUST_WEIGHT = BUILDER.comment("This weight is multiplied for each rust increase." +
+                "\nFor example, if this value is set to 0.5, when the rust should increase by 8, the actual increase is 8 * 0.5 = 4.")
+                .defineInRange("Rust Weight", 1.0, 0.0, 5.0);
         RUST_WHITELIST = BUILDER.comment("""
                 Items that don't rust.
                 Format: "minecraft:iron_sword" ("" required)
@@ -239,6 +264,9 @@ public class CommonConfig {
         BUILDER.push("Misc");
         PHYSICAL_EFFECT_REMOVE = BUILDER.comment("Whether physical effects (e.g. Ignition, Frost, etc.) can be removed by items that remove all effects.")
                 .define("Physical Effects Remove", false);
+        ENHANCED_CAMOUFLAGE = BUILDER.comment("Whether or not to enable enhanced camouflage, when enabled, monsters will lose their target if there is a line of sight obstacle between them when tracking a camouflaged target.")
+                .define("Enhanced Camouflage", false);
+
         LOCK_PERCENT = BUILDER.comment("Loot containers have a chance of being locked when they are generated.")
                 .defineInRange("Loot Container Locked Percent", 20, 0D, 100D);
         LOCK_BREAKER = BUILDER.comment("""
