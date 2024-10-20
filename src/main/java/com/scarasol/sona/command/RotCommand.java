@@ -53,7 +53,7 @@ public class RotCommand {
     }
 
     private static void addCommand(Player player, ItemStack itemStack, double rotLevel) {
-        RotManager.addRot(itemStack, rotLevel);
+        RotManager.addActualRot(itemStack, rotLevel);
         if (player instanceof ServerPlayer serverPlayer)
             RotManager.syncRotValue(RotManager.getRot(itemStack), player.getInventory().selected, true, serverPlayer);
         player.displayClientMessage(Component.literal(Component.translatable("command.sona.modify_rot.success", itemStack.getDisplayName(), RotManager.getRot(itemStack)).getString()), false);

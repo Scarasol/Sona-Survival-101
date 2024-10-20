@@ -1,5 +1,6 @@
 package com.scarasol.sona.mixin;
 
+import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.init.SonaMobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,16 +40,19 @@ public abstract class MobMixin extends LivingEntity {
 
     @Inject(method = "aiStep", at = @At("HEAD"))
     private void onAiStep(CallbackInfo ci){
+        if (!CommonConfig.ENHANCED_CAMOUFLAGE.get())
+            return;
         LivingEntity target = this.getTarget();
         if (target != null && target.isAlive() && target.hasEffect(SonaMobEffects.CAMOUFLAGE.get())){
             if (!this.getSensing().hasLineOfSight(target)){
+                this.setLastHurtByPlayer(null);
+                this.setLastHurtByMob(null);
                 this.setTarget(null);
                 lostTarget = true;
                 lostX = target.getX();
                 lostY = target.getY();
                 lostZ = target.getZ();
             }
-
         }
         if (lostTarget && getNavigation().isDone()){
             this.getNavigation().moveTo(lostX, lostY, lostZ, 1);

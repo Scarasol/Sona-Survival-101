@@ -99,10 +99,6 @@ public class ManagerEventHandler {
         if (livingEntity == null || livingEntity.getLevel().isClientSide())
             return;
         if (livingEntity instanceof Player player && !livingEntity.getLevel().isClientSide()) {
-            if (livingEntity instanceof ILivingEntityAccessor survivalEntity) {
-                InfectionManager.init(survivalEntity);
-                InjuryManager.init(survivalEntity);
-            }
             DeathManager.KeepItem(player);
         }
         if (livingEntity instanceof Villager && event.getSource().getDirectEntity() instanceof Zombie)
@@ -118,7 +114,18 @@ public class ManagerEventHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        DeathManager.respawnItem(event.getEntity());
+        Player player = event.getEntity();
+        DeathManager.respawnItem(player);
+    }
+
+    @SubscribeEvent
+    public static void onClone(PlayerEvent.Clone event){
+        if (event.isWasDeath()){
+            if (event.getOriginal() instanceof ILivingEntityAccessor oldPlayer && event.getEntity() instanceof ILivingEntityAccessor newPlayer){
+                InfectionManager.init(newPlayer, oldPlayer);
+                InjuryManager.init(newPlayer, oldPlayer);
+            }
+        }
     }
 
     @SubscribeEvent
@@ -266,7 +273,6 @@ public class ManagerEventHandler {
         Player player = Minecraft.getInstance().player.getLevel().getPlayerByUUID(event.getMessageSigner().profileId());
         if (player instanceof ILivingEntityAccessor livingEntityAccessor && event.getMessage() instanceof MutableComponent mutableComponent){
             InfectionManager.blurMessage(livingEntityAccessor, mutableComponent);
-//            SonaMod.LOGGER.info(event.getMessage().getClass().getName());
         }
     }
 
