@@ -46,6 +46,12 @@ public class RustManager {
     }
 
     public static void addRust(ItemStack itemStack, double addition) {
+        if (addition > 0)
+            addition = addition * CommonConfig.RUST_WEIGHT.get().floatValue();
+        addActualRust(itemStack, addition);
+    }
+
+    public static void addActualRust(ItemStack itemStack, double addition){
         double rust = addition > 0 ? Math.min(100, addition + getRust(itemStack)) : Math.max(0, addition + getRust(itemStack));
         putRust(itemStack, rust);
     }
@@ -128,6 +134,12 @@ public class RustManager {
 
     }
 
+    public static boolean canBeRust(Object obj){
+        if (obj instanceof ItemStack itemStack)
+            return canBeRust(itemStack.getItem());
+        return false;
+    }
+
     public static boolean canBeRust(ItemStack itemStack){
         return canBeRust(itemStack.getItem());
     }
@@ -147,21 +159,21 @@ public class RustManager {
     public static void tooltipInsert(List<Component> toolTip, ItemStack itemStack) {
         double rustValue = getRust(itemStack);
         if (rustValue < 40){
-            toolTip.add(1, Component.literal(Component.translatable("tooltip.sona.rust.brand_new").getString()).withStyle(ChatFormatting.DARK_GREEN));
+            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.brand_new").getString()).withStyle(ChatFormatting.DARK_GREEN));
         }else if (rustValue < 70){
-            toolTip.add(1, Component.literal(Component.translatable("tooltip.sona.rust.slightly_rusted").getString()).withStyle(ChatFormatting.YELLOW));
+            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.slightly_rusted").getString()).withStyle(ChatFormatting.YELLOW));
             if (itemStack.getItem() instanceof TieredItem)
-                toolTip.add(7, Component.literal("-5% " + Component.translatable("tooltip.sona.rust.tool_rust").getString()).withStyle(ChatFormatting.RED));
+                toolTip.add(Math.min(7, toolTip.size()), Component.literal("-5% " + Component.translatable("tooltip.sona.rust.tool_rust").getString()).withStyle(ChatFormatting.RED));
         }else {
-            toolTip.add(1, Component.literal(Component.translatable("tooltip.sona.rust.heavily_rusted").getString()).withStyle(ChatFormatting.RED));
+            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.heavily_rusted").getString()).withStyle(ChatFormatting.RED));
             if (itemStack.getItem() instanceof TieredItem)
-                toolTip.add(7, Component.literal("-20% " + Component.translatable("tooltip.sona.rust.tool_rust").getString()).withStyle(ChatFormatting.RED));
+                toolTip.add(Math.min(7, toolTip.size()), Component.literal("-15% " + Component.translatable("tooltip.sona.rust.tool_rust").getString()).withStyle(ChatFormatting.RED));
         }
         if (isWaxed(itemStack)){
             if (CommonConfig.WAX_PERMANENT.get()){
-                toolTip.add(2, Component.literal(Component.translatable("tooltip.sona.rust.waxed").getString()).withStyle(ChatFormatting.DARK_GREEN));
+                toolTip.add(Math.min(2, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.waxed").getString()).withStyle(ChatFormatting.DARK_GREEN));
             }else {
-                toolTip.add(2, Component.literal(Component.translatable("tooltip.sona.rust.waxed_remaining").getString() + getWaxed(itemStack)).withStyle(ChatFormatting.DARK_GREEN));
+                toolTip.add(Math.min(2, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.waxed_remaining").getString() + getWaxed(itemStack)).withStyle(ChatFormatting.DARK_GREEN));
             }
         }
     }

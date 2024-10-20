@@ -40,6 +40,12 @@ public class RotManager {
     }
 
     public static void addRot(ItemStack itemStack, double addition) {
+        if (addition > 0)
+            addition = addition * CommonConfig.ROT_WEIGHT.get().floatValue();
+        addActualRot(itemStack, addition);
+    }
+
+    public static void addActualRot(ItemStack itemStack, double addition){
         double rot = addition > 0 ? Math.min(100, addition + getRot(itemStack)) : Math.max(0, addition + getRot(itemStack));
         putRot(itemStack, rot);
     }
@@ -122,12 +128,13 @@ public class RotManager {
                     cycle = Math.max((int)(cycle / getMultiplier(itemStack) / containerMultiplier), 1);
                 }
                 double rotAddition = (gameTime - saveTime) / cycle;
+                rotAddition = rotAddition * CommonConfig.ROT_WEIGHT.get();
                 if (rotValue + rotAddition >= 100){
                     rotten(itemStack, null, slot);
                 }else {
-                    putRot(itemStack, Math.max(rotValue + rotAddition, 0));
+                    addActualRot(itemStack, rotAddition);
                     slot.set(itemStack);
-                    syncRotValue(rotValue + rotAddition, i, false, serverPlayer);
+                    syncRotValue(getRot(itemStack), i, false, serverPlayer);
                     slot.setChanged();
                 }
             }
@@ -182,7 +189,7 @@ public class RotManager {
                     cycle = Math.max((int)(cycle / getMultiplier(itemStack)), 1);
                 }
                 if (entity.level().getGameTime() % cycle == 0){
-                    putRot(itemStack, getRot(itemStack) + 1);
+                    addRot(itemStack, 1);
                     if (entity instanceof ServerPlayer serverPlayer)
                         syncRotValue(getRot(itemStack), slot, true, serverPlayer);
                 }
@@ -196,13 +203,13 @@ public class RotManager {
     public static void tooltipInsert(List<Component> toolTip, ItemStack itemStack) {
         double rotValue = getRot(itemStack);
         if (rotValue < 40){
-            toolTip.add(1, Component.literal(Component.translatable("tooltip.sona.rot.fresh").getString()).withStyle(ChatFormatting.DARK_GREEN));
+            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rot.fresh").getString()).withStyle(ChatFormatting.DARK_GREEN));
         }else if (rotValue < 70){
-            toolTip.add(1, Component.literal(Component.translatable("tooltip.sona.rot.slightly_spoiled").getString()).withStyle(ChatFormatting.DARK_AQUA));
+            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rot.slightly_spoiled").getString()).withStyle(ChatFormatting.DARK_AQUA));
         }else if (rotValue < 90){
-            toolTip.add(1, Component.literal(Component.translatable("tooltip.sona.rot.spoiled").getString()).withStyle(ChatFormatting.YELLOW));
+            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rot.spoiled").getString()).withStyle(ChatFormatting.YELLOW));
         }else {
-            toolTip.add(1, Component.literal(Component.translatable("tooltip.sona.rot.heavily_spoiled").getString()).withStyle(ChatFormatting.RED));
+            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rot.heavily_spoiled").getString()).withStyle(ChatFormatting.RED));
         }
     }
 

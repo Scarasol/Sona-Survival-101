@@ -79,7 +79,7 @@ public class InfectionCommand {
 
     private static void addCommand(Player player, Entity target, float infectionLevel) {
         if (target instanceof ILivingEntityAccessor survivalEntity) {
-            InfectionManager.addInfection(survivalEntity, infectionLevel);
+            InfectionManager.addActualInfection(survivalEntity, infectionLevel);
             player.displayClientMessage(Component.literal(Component.translatable("command.sona.modify_infection.success", target.getDisplayName(), InfectionManager.getInfection(survivalEntity)).getString()), false);
         }
     }

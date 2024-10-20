@@ -96,10 +96,10 @@ public class InjuryCommand {
     private static void addInjuryCommand(Player player, Entity target, float level, boolean injury) {
         if (target instanceof ILivingEntityAccessor survivalEntity) {
             if (injury) {
-                InjuryManager.addInjury(survivalEntity, level);
+                InjuryManager.addActualInjury(survivalEntity, level);
                 player.displayClientMessage(Component.literal(Component.translatable("command.sona.modify_injury.success", target.getDisplayName(), InjuryManager.getInjury(survivalEntity)).getString()), false);
             } else {
-                InjuryManager.addBandage(survivalEntity, level);
+                InjuryManager.addActualBandage(survivalEntity, level);
                 player.displayClientMessage(Component.literal(Component.translatable("command.sona.modify_bandage.success", target.getDisplayName(), InjuryManager.getBandage(survivalEntity)).getString()), false);
             }
         }

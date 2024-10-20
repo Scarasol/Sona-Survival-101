@@ -1,5 +1,6 @@
 package com.scarasol.sona.manager;
 
+import com.scarasol.sona.SonaMod;
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.accessor.ILivingEntityAccessor;
 import com.scarasol.sona.init.SonaDamageTypes;
@@ -35,12 +36,18 @@ public class InfectionManager {
     }
 
     public static void addInfection(ILivingEntityAccessor livingEntity, float addition){
+        if (addition > 0)
+            addition = addition * CommonConfig.INFECTION_WEIGHT.get().floatValue();
+        addActualInfection(livingEntity, addition);
+    }
+
+    public static void addActualInfection(ILivingEntityAccessor livingEntity, float addition){
         float infection = addition > 0 ? Math.min(100, addition + getInfection(livingEntity)) : Math.max(0, addition + getInfection(livingEntity));
         setInfection(livingEntity, infection);
     }
 
-    public static void init(ILivingEntityAccessor livingEntity){
-        livingEntity.setInfectionLevel(0);
+    public static void init(ILivingEntityAccessor newPlayer, ILivingEntityAccessor oldPlayer){
+        newPlayer.setInfectionLevel(Math.min(oldPlayer.getInfectionLevel(), CommonConfig.INFECTION_INITIAL_VALUE.get().floatValue()));
     }
 
     public static void infectionTick(LivingEntity livingEntity){
@@ -137,7 +144,7 @@ public class InfectionManager {
                 flag = true;
             }
         }else if (CommonConfig.INFECTION_SOURCE_PROJECTILE.get().contains(ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString())){
-            flag = true;
+            flag = !target.hasEffect(SonaMobEffects.IMMUNITY.get());
         }
         if (flag){
             if (!(target instanceof Player || CommonConfig.SUSCEPTIBLE_POPULATION.get().contains(ForgeRegistries.ENTITY_TYPES.getKey(target.getType()).toString())))

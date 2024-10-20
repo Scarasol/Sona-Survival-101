@@ -1,5 +1,6 @@
 package com.scarasol.sona.manager;
 
+import com.scarasol.sona.SonaMod;
 import com.scarasol.sona.accessor.ILivingEntityAccessor;
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.init.SonaDamageTypes;
@@ -26,6 +27,12 @@ public class InjuryManager {
     }
 
     public static void addInjury(ILivingEntityAccessor livingEntity, float addition) {
+        if (addition < 0)
+            addition = addition * CommonConfig.INJURY_WEIGHT.get().floatValue();
+        addActualInjury(livingEntity, addition);
+    }
+
+    public static void addActualInjury(ILivingEntityAccessor livingEntity, float addition) {
         float injury = getInjury(livingEntity) + addition;
         if (addition > 0) {
             livingEntity.setInjuryLevel(Math.min(100, injury));
@@ -48,8 +55,13 @@ public class InjuryManager {
         setBandage(livingEntity, bandage);
     }
 
-
     public static void addBandage(ILivingEntityAccessor livingEntity, float addition) {
+        if (addition < 0)
+            addition = addition * CommonConfig.INJURY_WEIGHT.get().floatValue();
+        addActualBandage(livingEntity, addition);
+    }
+
+    public static void addActualBandage(ILivingEntityAccessor livingEntity, float addition){
         float injury = getInjury(livingEntity);
         float bandage = getBandage(livingEntity);
         if (addition > 0) {
@@ -64,9 +76,9 @@ public class InjuryManager {
         setBandage(livingEntity, bandage);
     }
 
-    public static void init(ILivingEntityAccessor livingEntity){
-        setInjury(livingEntity, 100);
-        setBandage(livingEntity, 0);
+    public static void init(ILivingEntityAccessor newPlayer, ILivingEntityAccessor oldPlayer){
+        setInjury(newPlayer, Math.max(CommonConfig.INJURY_INITIAL_VALUE.get().floatValue(), oldPlayer.getInjuryLevel()));
+        setBandage(newPlayer, 0);
     }
 
     public static void injuryTick(LivingEntity livingEntity) {
