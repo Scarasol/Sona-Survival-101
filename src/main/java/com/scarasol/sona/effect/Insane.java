@@ -27,7 +27,7 @@ public class Insane extends MobEffectBase{
 
     @Override
     public void applyEffectTick(@NotNull LivingEntity entity, int amplifier) {
-        if (entity instanceof Mob mob &&!crazyAttackGoals.containsKey(mob)){
+        if (entity instanceof Mob mob && !crazyAttackGoals.containsKey(mob)){
             for (WrappedGoal goal : mob.targetSelector.getAvailableGoals()){
                 if (goal.getGoal() instanceof TargetGoal){
                     goal.stop();

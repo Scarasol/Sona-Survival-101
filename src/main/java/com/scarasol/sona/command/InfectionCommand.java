@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.scarasol.sona.configuration.CommonConfig;
-import com.scarasol.sona.accessor.ILivingEntityAccessor;
+import com.scarasol.sona.accessor.mixin.ILivingEntityAccessor;
 import com.scarasol.sona.manager.InfectionManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;

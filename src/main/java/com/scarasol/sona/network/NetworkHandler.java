@@ -16,6 +16,9 @@ public class NetworkHandler {
         PACKET_HANDLER.registerMessage(messageID++, SoundDecoyPacket.class, SoundDecoyPacket::encode, SoundDecoyPacket::decode, SoundDecoyPacket::handler);
         PACKET_HANDLER.registerMessage(messageID++, SyncSoundPacket.class, SyncSoundPacket::encode, SyncSoundPacket::decode, SyncSoundPacket::handler);
         PACKET_HANDLER.registerMessage(messageID++, LockPacket.class, LockPacket::encode, LockPacket::decode, LockPacket::handler);
+        PACKET_HANDLER.registerMessage(messageID++, SyncChatPacket.class, SyncChatPacket::encode, SyncChatPacket::decode, SyncChatPacket::handler);
+        PACKET_HANDLER.registerMessage(messageID++, ChunkDataSyncPacket.class, ChunkDataSyncPacket::encode, ChunkDataSyncPacket::decode, ChunkDataSyncPacket::handler);
+        PACKET_HANDLER.registerMessage(messageID++, SavedDataSyncPacket.class, SavedDataSyncPacket::encode, SavedDataSyncPacket::decode, SavedDataSyncPacket::handler);
     }
 
 }

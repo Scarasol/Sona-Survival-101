@@ -1,4 +1,4 @@
-package com.scarasol.sona.accessor;
+package com.scarasol.sona.accessor.mixin;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;

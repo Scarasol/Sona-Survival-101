@@ -1,6 +1,7 @@
 package com.scarasol.sona.mixin;
 
 import com.scarasol.sona.configuration.CommonConfig;
+import com.scarasol.sona.manager.ChatManager;
 import com.scarasol.sona.manager.RotManager;
 import com.scarasol.sona.manager.RustManager;
 import net.minecraft.core.BlockPos;
@@ -38,6 +39,9 @@ public abstract class ItemStackMixin extends net.minecraftforge.common.capabilit
     protected ItemStackMixin(Class<ItemStack> baseClass, boolean isLazy) {
         super(baseClass, isLazy);
     }
+
+    @Unique
+    private boolean init;
 
     @Inject(method = "isSameItemSameTags", cancellable = true, at = @At("RETURN"))
     private static void OnIsSameItemSameTags(ItemStack itemStack1, ItemStack itemStack2, CallbackInfoReturnable<Boolean> cir){
@@ -87,6 +91,10 @@ public abstract class ItemStackMixin extends net.minecraftforge.common.capabilit
 
     @Inject(method = "inventoryTick", at = @At("HEAD"))
     private void onInventoryTick(Level level, Entity entity, int slot, boolean selected, CallbackInfo ci){
+        if (!init && ChatManager.isChatLimit()){
+            ChatManager.setItemRange(this);
+            init = true;
+        }
         if (level.isClientSide())
             return;
         if (CommonConfig.ROT_OPEN.get())
@@ -141,10 +149,10 @@ public abstract class ItemStackMixin extends net.minecraftforge.common.capabilit
         float speed = cir.getReturnValue();
         if (!CommonConfig.RUST_OPEN.get() || !RustManager.canBeRust(this))
             return;
-        if (RustManager.getRust(this) >= 70) {
-            cir.setReturnValue(Math.min(1, speed * 0.85f));
-        }else if (RustManager.getRust(this) >= 40) {
-            cir.setReturnValue(Math.min(1, speed * 0.95f));
+        if (RustManager.getRust(this) >= 75) {
+            cir.setReturnValue(Math.max(1, speed * 0.85f));
+        }else if (RustManager.getRust(this) >= 50) {
+            cir.setReturnValue(Math.max(1, speed * 0.95f));
         }
     }
 }

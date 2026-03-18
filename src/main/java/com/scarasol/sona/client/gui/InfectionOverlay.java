@@ -3,19 +3,21 @@ package com.scarasol.sona.client.gui;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.scarasol.sona.configuration.CommonConfig;
-import com.scarasol.sona.accessor.ILivingEntityAccessor;
+import com.scarasol.sona.accessor.mixin.ILivingEntityAccessor;
 import com.scarasol.sona.manager.InfectionManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber({Dist.CLIENT})
+@OnlyIn(Dist.CLIENT)
 public class InfectionOverlay{
 
     @SubscribeEvent(priority = EventPriority.NORMAL)
@@ -34,19 +36,14 @@ public class InfectionOverlay{
             RenderSystem.setShaderColor(1, 1, 1, 1);
             if (CommonConfig.INFECTION_OPEN.get() && entity instanceof ILivingEntityAccessor player && !(entity.isCreative() || entity.isSpectator())) {
                 if (InfectionManager.getInfection(player) <= 40) {
-//                    RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/n1.png"));
                     event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/n1.png"), posX, posY, 0, 0, 32, 32, 32, 32);
                 } else if (InfectionManager.getInfection(player) <= 70) {
-//                    RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/g2.png"));
                     event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/g2.png"), posX, posY, 0, 0, 32, 32, 32, 32);
                 } else if (InfectionManager.getInfection(player) <= 90) {
-//                    RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/g3.png"));
                     event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/g3.png"), posX, posY, 0, 0, 32, 32, 32, 32);
                 } else if (InfectionManager.getInfection(player) < 100) {
-//                    RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/g4.png"));
                     event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/g4.png"), posX, posY, 0, 0, 32, 32, 32, 32);
                 } else {
-//                    RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/g5.png"));
                     event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/g5.png"), posX, posY, 0, 0, 32, 32, 32, 32);
                 }
             }

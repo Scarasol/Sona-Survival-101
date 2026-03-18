@@ -2,13 +2,18 @@ package com.scarasol.sona.manager;
 
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.entity.SoundDecoy;
+import com.scarasol.sona.event.SonaEventHooks;
+import com.scarasol.sona.event.server.SonaSoundEvent;
 import com.scarasol.sona.init.SonaEntities;
+import com.scarasol.sona.init.SonaMobEffects;
 import com.scarasol.sona.network.NetworkHandler;
 import com.scarasol.sona.network.SoundDecoyPacket;
 import com.scarasol.sona.network.SyncSoundPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
@@ -71,15 +76,19 @@ public class SoundManager {
     }
 
     public static void spawnSoundDecoy(Level level, double x, double y, double z, int amplifier){
-        if (level instanceof ServerLevel serverLevel){
+        if (level instanceof ServerLevel serverLevel && SonaEventHooks.spawnSoundDecoy(serverLevel, BlockPos.containing(x, y, z), amplifier, SonaSoundEvent.State.DECOY)){
             SoundDecoy soundDecoy = new SoundDecoy(SonaEntities.SOUND_DECOY.get(), level, amplifier);
             soundDecoy.setPos(x, y, z);
             soundDecoy.finalizeSpawn(serverLevel, level.getCurrentDifficultyAt(BlockPos.containing(x, y, z)), MobSpawnType.MOB_SUMMONED, null, null);
             serverLevel.addFreshEntity(soundDecoy);
-        }else if (level.isClientSide()){
+        }else if (level.isClientSide()) {
             NetworkHandler.PACKET_HANDLER.sendToServer(new SoundDecoyPacket(x, y, z, amplifier));
         }
     }
 
-
+    public static void addSoundEffect(LivingEntity livingEntity, int time, int amplifier) {
+        if (livingEntity.level() instanceof ServerLevel serverLevel && SonaEventHooks.spawnSoundDecoy(serverLevel, livingEntity.blockPosition(), amplifier, SonaSoundEvent.State.LIVING)) {
+            livingEntity.addEffect(new MobEffectInstance(SonaMobEffects.EXPOSURE.get(), time, amplifier, false, false));
+        }
+    }
 }

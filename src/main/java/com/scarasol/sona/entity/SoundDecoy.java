@@ -1,12 +1,12 @@
 package com.scarasol.sona.entity;
 
+import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.init.SonaEntities;
 import com.scarasol.sona.init.SonaMobEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
@@ -20,7 +20,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -30,9 +29,11 @@ public class SoundDecoy extends Mob {
     private int amplifier;
     private int life;
 
+    private String soundEvent;
+
     public SoundDecoy(EntityType<? extends Mob> entityType, Level level, int amplifier) {
         super(entityType, level);
-        life = 100 * (amplifier + 1);
+        life = 20 * CommonConfig.DECOY_LIFE.get() * (amplifier + 1);
         this.amplifier = amplifier;
         this.setNoGravity(true);
         this.setNoAi(true);
@@ -51,14 +52,22 @@ public class SoundDecoy extends Mob {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
+    public String getSoundEvent() {
+        return soundEvent;
+    }
+
+    public void setSoundEvent(String soundEvent) {
+        this.soundEvent = soundEvent;
+    }
+
     @Override
     public SoundEvent getHurtSound(@NotNull DamageSource ds) {
-        return ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(""));
+        return null;
     }
 
     @Override
     public SoundEvent getDeathSound() {
-        return ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(""));
+        return null;
     }
 
     @Override
@@ -96,8 +105,12 @@ public class SoundDecoy extends Mob {
     @Override
     public void baseTick() {
         super.baseTick();
-        if (life-- <= 0)
+        if (life % 10 == 0 && !level().getEntitiesOfClass(SoundDecoy.class, getBoundingBox().inflate(8), soundDecoy -> soundDecoy.amplifier >= this.amplifier && soundDecoy != this).isEmpty()) {
             this.discard();
+        }
+        if (life-- <= 0) {
+            this.discard();
+        }
     }
 
     @Override
@@ -122,6 +135,10 @@ public class SoundDecoy extends Mob {
 
     @Override
     protected void doPush(@NotNull Entity entityIn) {
+    }
+
+    @Override
+    public void push(Entity entity) {
     }
 
     @Override

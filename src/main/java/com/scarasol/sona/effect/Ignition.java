@@ -1,10 +1,10 @@
 package com.scarasol.sona.effect;
 
+import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.init.SonaMobEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
@@ -52,7 +52,7 @@ public class Ignition extends PhysicalEffect{
             if (burnUnderWater){
                 breakPowderSnow(entity.level(), BlockPos.containing(entity.getX(), entity.getY(), entity.getZ()));
                 breakPowderSnow(entity.level(), BlockPos.containing(entity.getX(), entity.getY() + 1, entity.getZ()));
-            } else{
+            } else {
                 entity.addEffect(new MobEffectInstance(SonaMobEffects.FRAGILITY.get(), ignitedTime, amplifier, false, false));
                 entity.removeEffect(SonaMobEffects.IGNITION.get());
                 return;
@@ -62,6 +62,8 @@ public class Ignition extends PhysicalEffect{
             entity.setSharedFlagOnFire(!entity.fireImmune());
         }
         if (ignitedTime % 20 == 0){
+            if (CommonConfig.OVER_DOT.get())
+                entity.invulnerableTime = 0;
             entity.hurt(entity.level().damageSources().inFire(), amplifier + 1);
         }
     }

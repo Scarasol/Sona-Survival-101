@@ -24,13 +24,15 @@ public abstract class TargetGoalMixin extends Goal {
 
     @Inject(method = "canContinueToUse", cancellable = true, at = @At("RETURN"))
     private void onCanContinueToUse(CallbackInfoReturnable<Boolean> cir){
-        if (!CommonConfig.ENHANCED_CAMOUFLAGE.get())
+        if (!CommonConfig.ENHANCED_CAMOUFLAGE.get()) {
             return;
+        }
         if (cir.getReturnValue()){
             LivingEntity entity = this.targetMob;
-            if (entity != null && entity.isAlive() && entity.hasEffect(SonaMobEffects.CAMOUFLAGE.get())){
-                if (!this.mob.getSensing().hasLineOfSight(entity))
+            if (entity != null && entity.isAlive() && entity.hasEffect(SonaMobEffects.CAMOUFLAGE.get()) && !entity.hasEffect(SonaMobEffects.EXPOSURE.get())){
+                if (!this.mob.getSensing().hasLineOfSight(entity)) {
                     cir.setReturnValue(false);
+                }
             }
         }
     }

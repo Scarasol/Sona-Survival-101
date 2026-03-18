@@ -18,8 +18,9 @@ public abstract class InventoryMixin implements Container, Nameable {
 
     @Inject(method = "addResource(ILnet/minecraft/world/item/ItemStack;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;grow(I)V"), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void onAddResource(int slotNumber, ItemStack itemStack, CallbackInfoReturnable<Integer> cir, Item item, int i, ItemStack itemStack2, int j){
-        if (CommonConfig.ROT_OPEN.get() && itemStack2.isEdible() && RotManager.canBeRotten(itemStack))
+        if (CommonConfig.ROT_OPEN.get() && itemStack2.isEdible() && RotManager.canBeRotten(itemStack)) {
             RotManager.rotWhenStack(itemStack2, RotManager.getRot(itemStack2), RotManager.getRot(itemStack), itemStack2.getCount(), j, RotManager.getRotSaveTime(itemStack));
+        }
     }
 
 }

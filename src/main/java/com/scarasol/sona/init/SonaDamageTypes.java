@@ -12,6 +12,7 @@ public class SonaDamageTypes {
     public static final ResourceKey<DamageType> INJURY = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("sona:injury"));
     public static final ResourceKey<DamageType> INFECTION = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("sona:infection"));
     public static final ResourceKey<DamageType> IMMUNITY = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("sona:immunity"));
+    public static final ResourceKey<DamageType> LACERATION = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("sona:laceration"));
 
     public static DamageSource damageSource(RegistryAccess registryAccess, ResourceKey<DamageType> resourceKey){
         return new DamageSource(registryAccess.registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(resourceKey));

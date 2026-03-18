@@ -1,6 +1,6 @@
 package com.scarasol.sona.network;
 
-import com.scarasol.sona.accessor.IBaseContainerBlockEntityAccessor;
+import com.scarasol.sona.accessor.mixin.IBaseContainerBlockEntityAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -59,7 +59,7 @@ public class LockPacket {
                             if (blockEntity instanceof IBaseContainerBlockEntityAccessor baseContainerBlockEntity && !blockEntity.getPersistentData().contains("flag")){
                                 if (msg.isLocked())
                                     baseContainerBlockEntity.lockContainer(blockEntity.getPersistentData(), msg.getLockCode());
-                                blockEntity.getPersistentData().putBoolean("flag", true);
+                                blockEntity.getPersistentData().putBoolean("LockFlag", true);
                                 level.sendBlockUpdated(msg.getBlockPos(), blockState, blockState, 3);
                             }
                         }

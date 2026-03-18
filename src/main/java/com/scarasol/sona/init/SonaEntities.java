@@ -18,7 +18,7 @@ public class SonaEntities {
     public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, SonaMod.MODID);
 
     public static final RegistryObject<EntityType<SoundDecoy>> SOUND_DECOY = register("sound_decoy", EntityType.Builder.<SoundDecoy>of(SoundDecoy::new, MobCategory.MONSTER)
-            .setShouldReceiveVelocityUpdates(true).setTrackingRange(0).setUpdateInterval(3).setCustomClientFactory(SoundDecoy::new).fireImmune().sized(0.3f, 0.3f));
+            .setShouldReceiveVelocityUpdates(true).setTrackingRange(0).setUpdateInterval(3).setCustomClientFactory(SoundDecoy::new).fireImmune().sized(0.0f, 0.0f));
 
     private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryName, EntityType.Builder<T> entityTypeBuilder) {
         return REGISTRY.register(registryName, () -> entityTypeBuilder.build(registryName));

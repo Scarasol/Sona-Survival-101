@@ -1,9 +1,9 @@
 package com.scarasol.sona.effect;
 
+import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.init.SonaMobEffects;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -41,10 +41,12 @@ public class Frost extends PhysicalEffect{
             return;
         }
         float freezeImmune = equipmentFreezeImmune(entity);
-        entity.setTicksFrozen(entity.getTicksFrozen() + (int) ((amplifier + 3) * freezeImmune));
+        entity.setTicksFrozen(entity.getTicksFrozen() + Math.round((amplifier + 1) * freezeImmune + 2));
         if (entity.isFullyFrozen()){
             int frozenTime = entity.getEffect(SonaMobEffects.FROST.get()).getDuration();
             if (frozenTime % 10 == 0){
+                if (CommonConfig.OVER_DOT.get())
+                    entity.invulnerableTime = 0;
                 entity.hurt(entity.level().damageSources().freeze(), (entity.getType().is(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES) ? (5 + amplifier) / 2 : (1 + amplifier) / 2 ));
             }
         }

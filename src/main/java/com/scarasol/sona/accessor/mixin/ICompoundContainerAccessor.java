@@ -1,4 +1,4 @@
-package com.scarasol.sona.accessor;
+package com.scarasol.sona.accessor.mixin;
 
 import net.minecraft.world.Container;
 

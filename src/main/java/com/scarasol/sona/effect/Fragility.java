@@ -3,6 +3,7 @@ package com.scarasol.sona.effect;
 import com.scarasol.sona.init.SonaMobEffects;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -21,6 +22,7 @@ public class Fragility extends MobEffectBase{
 
     @Override
     public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
+//        entity.setPose(Pose.SWIMMING);
         double level = Math.max(entity.hasEffect(SonaMobEffects.FRAGILITY.get()) ? entity.getEffect(SonaMobEffects.FRAGILITY.get()).getAmplifier() : 0, amplifier) + 1;
         double addition = -1 * ((0.15 * level) / (0.15 * level + 1)) * 20;
         AttributeModifier attributeModifier = new AttributeModifier(FRAGILITY_UUID, getDescriptionId(), addition, AttributeModifier.Operation.ADDITION);

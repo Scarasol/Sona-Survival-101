@@ -1,6 +1,6 @@
 package com.scarasol.sona.mixin;
 
-import com.scarasol.sona.accessor.ICompoundContainerAccessor;
+import com.scarasol.sona.accessor.mixin.ICompoundContainerAccessor;
 import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import org.spongepowered.asm.mixin.Final;

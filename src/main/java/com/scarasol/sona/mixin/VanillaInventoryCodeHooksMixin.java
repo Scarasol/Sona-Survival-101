@@ -1,6 +1,6 @@
 package com.scarasol.sona.mixin;
 
-import com.scarasol.sona.accessor.IBaseContainerBlockEntityAccessor;
+import com.scarasol.sona.accessor.mixin.IBaseContainerBlockEntityAccessor;
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.manager.RotManager;
 import net.minecraft.core.BlockPos;

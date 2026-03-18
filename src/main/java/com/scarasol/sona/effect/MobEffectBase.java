@@ -12,4 +12,6 @@ public class MobEffectBase extends MobEffect {
     public boolean isDurationEffectTick(int duration, int amplifier) {
         return false;
     }
+
+
 }

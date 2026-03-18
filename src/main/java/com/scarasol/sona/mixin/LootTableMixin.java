@@ -18,9 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 @Mixin(LootTable.class)
 public abstract class LootTableMixin {
@@ -29,8 +27,12 @@ public abstract class LootTableMixin {
     private void onFill(Container container, LootParams lootParams, long p_287585_, CallbackInfo ci, LootContext lootcontext, ObjectArrayList objectarraylist, RandomSource random, List list, ObjectListIterator var9, ItemStack itemStack){
         if (CommonConfig.ROT_OPEN.get() && container instanceof BlockEntity entity && itemStack.isEdible() && RotManager.canBeRotten(itemStack)) {
             long day = entity.getLevel().getDayTime() / 24000;
-            double multiplier = 5D * day / (day + 12D);
-            RotManager.putRot(itemStack, random.nextDouble() * 20 * Math.max(multiplier, 1));
+            double multiplier = (5D * day / (day + 12D)) * RotManager.getMultiplier(itemStack);
+            if (random.nextDouble() < CommonConfig.WARPED_CHANCE.get()) {
+                multiplier = multiplier * CommonConfig.WARPED_WEIGHT.get();
+                RotManager.putWarp(itemStack, true);
+            }
+            RotManager.putRot(itemStack, random.nextDouble() * 20 * Math.max(multiplier, 0));
         }
         if (CommonConfig.RUST_OPEN.get() && RustManager.canBeRust(itemStack)){
             if (random.nextDouble() < 0.2){

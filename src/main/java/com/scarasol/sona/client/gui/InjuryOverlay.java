@@ -3,20 +3,24 @@ package com.scarasol.sona.client.gui;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.scarasol.sona.configuration.CommonConfig;
-import com.scarasol.sona.accessor.ILivingEntityAccessor;
+import com.scarasol.sona.accessor.mixin.ILivingEntityAccessor;
 import com.scarasol.sona.manager.InjuryManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+/**
+ * @author Scarasol
+ */
 @Mod.EventBusSubscriber({Dist.CLIENT})
+@OnlyIn(Dist.CLIENT)
 public class InjuryOverlay{
 
     @SubscribeEvent(priority = EventPriority.NORMAL)
@@ -28,9 +32,9 @@ public class InjuryOverlay{
         Player entity = Minecraft.getInstance().player;
         if (entity instanceof ILivingEntityAccessor player) {
             double blood = InjuryManager.getInjury(player);
-            double gold_blood = blood + InjuryManager.getBandage(player);
+            double goldBlood = blood + InjuryManager.getBandage(player);
             if (CommonConfig.INJURY_OVERLAY_PRESET.get() == 1 || CommonConfig.INJURY_OVERLAY_PRESET.get() == 2 || (CommonConfig.INJURY_OVERLAY_PRESET.get() == 0 && CommonConfig.RISE_UNDERWATER.get())) {
-                if (entity.getAirSupply() < entity.getMaxAirSupply() || entity.isEyeInFluid(FluidTags.WATER)) {
+                if (entity.getAirSupply() < entity.getMaxAirSupply() || entity.getEyeInFluidType().canDrownIn(entity)) {
                     posY -= 9;
                 }
             }
@@ -44,29 +48,21 @@ public class InjuryOverlay{
                 for (int i = 0; i < 10; ++i) {
                     int j = (9 - i) * 10;
                     int k = 8;
-//                    RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/blood0.png"));
                     event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/blood0.png"), posX + 10 + k * i, posY, 0, 0, 9, 9, 9, 9);
                     if (blood > j + 5) {
-//                        RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/blood1.png"));
                         event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/blood1.png"), posX + 10 + k * i, posY, 0, 0, 9, 9, 9, 9);
                     } else if (blood > j) {
-                        if (gold_blood > j + 5) {
-//                            RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/blood5.png"));
+                        if (goldBlood > j + 5) {
                             event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/blood5.png"), posX + 10 + k * i, posY, 0, 0, 9, 9, 9, 9);
                         } else {
-//                            RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/blood2.png"));
                             event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/blood2.png"), posX + 10 + k * i, posY, 0, 0, 9, 9, 9, 9);
                         }
-                    } else if (gold_blood > j + 5) {
-//                        RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/blood3.png"));
+                    } else if (goldBlood > j + 5) {
                         event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/blood3.png"), posX + 10 + k * i, posY, 0, 0, 9, 9, 9, 9);
-                    } else if (gold_blood > j) {
-//                        RenderSystem.setShaderTexture(0, new ResourceLocation("sona:textures/screens/blood4.png"));
+                    } else if (goldBlood > j) {
                         event.getGuiGraphics().blit(new ResourceLocation("sona:textures/screens/blood4.png"), posX + 10 + k * i, posY, 0, 0, 9, 9, 9, 9);
                     }
                 }
-
-
             }
             RenderSystem.depthMask(true);
             RenderSystem.defaultBlendFunc();

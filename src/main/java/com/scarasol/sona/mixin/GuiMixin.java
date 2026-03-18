@@ -1,27 +1,16 @@
 package com.scarasol.sona.mixin;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.scarasol.sona.accessor.ILivingEntityAccessor;
 import com.scarasol.sona.client.gui.ItemMarkHandler;
-import com.scarasol.sona.configuration.CommonConfig;
-import com.scarasol.sona.manager.InfectionManager;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.UUID;
 
 @OnlyIn(Dist.CLIENT)
 @Mixin(Gui.class)

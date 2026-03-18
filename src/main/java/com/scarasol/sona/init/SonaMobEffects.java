@@ -14,12 +14,15 @@ public class SonaMobEffects {
     public static final RegistryObject<MobEffect> CAMOUFLAGE = REGISTRY.register("camouflage", () -> new PhysicalEffect(MobEffectCategory.BENEFICIAL, -13408768));
     public static final RegistryObject<MobEffect> CONFUSION = REGISTRY.register("confusion", Confusion::new);
     public static final RegistryObject<MobEffect> CORROSION = REGISTRY.register("corrosion", Corrosion::new);
-    public static final RegistryObject<MobEffect> EXPOSURE = REGISTRY.register("exposure", Exposure::new);
+    public static final RegistryObject<MobEffect> EXPOSURE = REGISTRY.register("exposure", () -> new PhysicalEffect(MobEffectCategory.HARMFUL, -3407872));
     public static final RegistryObject<MobEffect> FRAGILITY = REGISTRY.register("fragility", Fragility::new);
     public static final RegistryObject<MobEffect> FROST = REGISTRY.register("frost", Frost::new);
     public static final RegistryObject<MobEffect> IGNITION = REGISTRY.register("ignition", Ignition::new);
     public static final RegistryObject<MobEffect> IMMUNITY = REGISTRY.register("immunity", Immunity::new);
+    public static final RegistryObject<MobEffect> INFECTION = REGISTRY.register("infection", Infection::new);
     public static final RegistryObject<MobEffect> INSANE = REGISTRY.register("insane", Insane::new);
+    public static final RegistryObject<MobEffect> LACERATION = REGISTRY.register("laceration", () -> new PhysicalEffect(MobEffectCategory.HARMFUL, 16758465));
+    public static final RegistryObject<MobEffect> MAIM = REGISTRY.register("maim", () -> new PhysicalEffect(MobEffectCategory.HARMFUL, 7997962));
     public static final RegistryObject<MobEffect> SLIMINESS = REGISTRY.register("sliminess", Sliminess::new);
     public static final RegistryObject<MobEffect> STUN = REGISTRY.register("stun", Stun::new);
 

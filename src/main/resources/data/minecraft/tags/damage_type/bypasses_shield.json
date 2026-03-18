@@ -3,6 +3,7 @@
   "values": [
     "sona:injury",
     "sona:infection",
-    "sona:immunity"
+    "sona:immunity",
+    "sona:laceration"
   ]
 }

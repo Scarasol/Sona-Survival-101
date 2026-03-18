@@ -121,6 +121,14 @@ repositories {
      flatDir {
          dir 'libs'
      }
+    maven {
+        // Add curse maven to repositories
+        name = "Curse Maven"
+        url = "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
@@ -134,6 +142,29 @@ dependencies {
     implementation fg.deobf("net.p3pp3rf1y.sophisticatedcore:sophisticatedcore-1.20.1:0.6.34.718")
     implementation fg.deobf("net.p3pp3rf1y.sophisticatedbackpacks:sophisticatedbackpacks-1.20.1:3.20.11.1115")
     implementation fg.deobf("com.tiviacz.travelersbackpack:travelersbackpack-forge-1.20.1:9.1.16")
+    implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6518539")
+    implementation fg.deobf("curse.maven:no-chat-reports-634062:4610474")
+    implementation fg.deobf("curse.maven:curios-309927:6418456")
+//    implementation fg.deobf("curse.maven:geckolib-388172:6333474")
+    implementation fg.deobf("curse.maven:geckolib-388172:7025129")
+    implementation fg.deobf("curse.maven:superb-warfare-1218165:7292685")
+    implementation fg.deobf("curse.maven:jade-324717:6855440")
+    implementation fg.deobf("curse.maven:just-enough-effect-descriptions-jeed-532286:6172935")
+    implementation fg.deobf("curse.maven:jei-238222:7037120")
+    implementation fg.deobf("curse.maven:cooking-for-blockheads-231484:6975915")
+    implementation fg.deobf("curse.maven:balm-531761:7087245")
+    implementation fg.deobf("curse.maven:lootr-361276:6961345")
+    implementation fg.deobf("curse.maven:spark-361579:4738952")
+    implementation fg.deobf("curse.maven:apocalypse-now-448410:6364603")
+    implementation fg.deobf("curse.maven:the-lost-cities-269024:7014353")
+    implementation fg.deobf("curse.maven:embeddium-908741:5681725")
+
+
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.4.1")) {
+        jarJar.ranged(it, "[0.4.1,)")
+    }
+
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -215,4 +246,9 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+
+jar {
+    exclude '**/mixin/geckolib/**'
 }

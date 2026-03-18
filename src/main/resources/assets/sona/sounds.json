@@ -18,5 +18,31 @@
         "stream": false
       }
     ]
+  },
+  "slider_zipper_bag": {
+    "category": "player",
+    "subtitle": "subtitles.slider_zipper_bag",
+    "sounds": [
+      {
+        "name": "sona:slider_zipper_bag",
+        "stream": false
+      }
+    ]
+  },
+  "laceration_loop": {
+    "category": "player",
+    "subtitle": "subtitles.laceration_loop",
+    "sounds": [
+      {
+        "name": "sona:laceration_1",
+
+        "stream": false
+      },
+      {
+        "name": "sona:laceration_2",
+
+        "stream": false
+      }
+    ]
   }
 }

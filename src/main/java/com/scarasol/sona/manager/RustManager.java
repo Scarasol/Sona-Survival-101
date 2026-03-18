@@ -8,6 +8,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -77,7 +78,7 @@ public class RustManager {
         if (!canBeRust(itemStack))
             return;
         double rustValue = getRust(itemStack);
-        if (rustValue >= 70 && new Random().nextDouble() < (rustValue - 70) / 200) {
+        if (rustValue >= 75 && new Random().nextDouble() < (rustValue - 75) / 800) {
             itemStack.hurtAndBreak(9999999, livingEntity, consumer -> consumer.broadcastBreakEvent(equipmentSlot));
         }
         if (isWaxed(itemStack)){
@@ -85,7 +86,7 @@ public class RustManager {
                 addWaxed(itemStack, -1);
             return;
         }
-        rustValue = new Random().nextDouble(0.2, 1.0) + rustValue / 100;
+        rustValue = new Random().nextDouble(0.2, 0.6) + rustValue / 100;
         addRust(itemStack, rustValue);
     }
 
@@ -99,14 +100,14 @@ public class RustManager {
         if (!canBeRust(itemStack))
             return;
         double rustValue = getRust(itemStack);
-        if (rustValue < 40)
+        if (rustValue < 50)
             return;
         UUID equipmentSlot;
         double multiplier;
         if (itemStack.getItem() instanceof TieredItem && event.getSlotType() == EquipmentSlot.MAINHAND){
             double value = 1;
             equipmentSlot = MAINHAND;
-            if (rustValue >= 70){
+            if (rustValue >= 75){
                 multiplier = -0.5;
             }else {
                 multiplier = -0.25;
@@ -118,7 +119,7 @@ public class RustManager {
             }
             event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(equipmentSlot, "Rust Modifier", multiplier * value, AttributeModifier.Operation.ADDITION));
         }else if (itemStack.getItem() instanceof ArmorItem armorItem && event.getSlotType() == armorItem.getEquipmentSlot()){
-            if (rustValue >= 70){
+            if (rustValue >= 75){
                 multiplier = -0.1;
             }else {
                 multiplier = -0.05;
@@ -158,20 +159,20 @@ public class RustManager {
 
     public static void tooltipInsert(List<Component> toolTip, ItemStack itemStack) {
         double rustValue = getRust(itemStack);
-        if (rustValue < 40){
-            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.brand_new").getString()).withStyle(ChatFormatting.DARK_GREEN));
-        }else if (rustValue < 70){
-            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.slightly_rusted").getString()).withStyle(ChatFormatting.YELLOW));
+        if (rustValue < 50){
+            toolTip.add(Math.min(1, toolTip.size()), Component.translatable("tooltip.sona.rust.brand_new").withStyle(ChatFormatting.DARK_GREEN));
+        }else if (rustValue < 75){
+            toolTip.add(Math.min(1, toolTip.size()), Component.translatable("tooltip.sona.rust.slightly_rusted").withStyle(ChatFormatting.YELLOW));
             if (itemStack.getItem() instanceof TieredItem)
                 toolTip.add(Math.min(7, toolTip.size()), Component.literal("-5% " + Component.translatable("tooltip.sona.rust.tool_rust").getString()).withStyle(ChatFormatting.RED));
         }else {
-            toolTip.add(Math.min(1, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.heavily_rusted").getString()).withStyle(ChatFormatting.RED));
+            toolTip.add(Math.min(1, toolTip.size()), Component.translatable("tooltip.sona.rust.heavily_rusted").withStyle(ChatFormatting.RED));
             if (itemStack.getItem() instanceof TieredItem)
                 toolTip.add(Math.min(7, toolTip.size()), Component.literal("-15% " + Component.translatable("tooltip.sona.rust.tool_rust").getString()).withStyle(ChatFormatting.RED));
         }
         if (isWaxed(itemStack)){
             if (CommonConfig.WAX_PERMANENT.get()){
-                toolTip.add(Math.min(2, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.waxed").getString()).withStyle(ChatFormatting.DARK_GREEN));
+                toolTip.add(Math.min(2, toolTip.size()), Component.translatable("tooltip.sona.rust.waxed").withStyle(ChatFormatting.DARK_GREEN));
             }else {
                 toolTip.add(Math.min(2, toolTip.size()), Component.literal(Component.translatable("tooltip.sona.rust.waxed_remaining").getString() + getWaxed(itemStack)).withStyle(ChatFormatting.DARK_GREEN));
             }
@@ -181,8 +182,9 @@ public class RustManager {
     public static void onAttacked(LivingEntity livingEntity) {
         EquipmentSlot equipmentSlot = EquipmentSlot.byTypeAndIndex(EquipmentSlot.Type.ARMOR, livingEntity.getRandom().nextInt(4));
         ItemStack itemStack = livingEntity.getItemBySlot(equipmentSlot);
-        if (canBeRust(itemStack))
+        if (canBeRust(itemStack)) {
             rustItem(itemStack, livingEntity, equipmentSlot);
+        }
     }
 
     public static boolean wax(ItemStack itemStack, ItemStack waxItem, LivingEntity livingEntity){
@@ -222,7 +224,7 @@ public class RustManager {
         return false;
     }
 
-    private static boolean consume(ItemStack itemStack, int number, LivingEntity livingEntity){
+    public static boolean consume(ItemStack itemStack, int number, LivingEntity livingEntity){
         if (livingEntity instanceof Player player && player.isCreative())
             return true;
         if (itemStack.isDamageableItem()){
@@ -232,7 +234,7 @@ public class RustManager {
         }else {
             if (number > itemStack.getCount())
                 return false;
-            itemStack.shrink(1);
+            itemStack.shrink(number);
         }
         return true;
     }
@@ -242,10 +244,10 @@ public class RustManager {
         SoundEvent soundEvent;
         if (wax){
             particleType = ParticleTypes.WAX_ON;
-            soundEvent = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("item.honeycomb.wax_on"));
+            soundEvent = SoundEvents.HONEYCOMB_WAX_ON;
         }else {
             particleType = ParticleTypes.SCRAPE;
-            soundEvent = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("item.axe.scrape"));
+            soundEvent = SoundEvents.AXE_SCRAPE;
         }
         for (int i = 0; i < 10; ++i) {
             double d4 = random.nextGaussian() * 0.02;

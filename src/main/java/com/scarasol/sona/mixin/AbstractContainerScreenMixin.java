@@ -1,6 +1,5 @@
 package com.scarasol.sona.mixin;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.scarasol.sona.client.gui.ItemMarkHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;

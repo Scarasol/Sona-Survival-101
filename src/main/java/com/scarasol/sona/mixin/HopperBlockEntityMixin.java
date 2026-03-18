@@ -1,6 +1,6 @@
 package com.scarasol.sona.mixin;
 
-import com.scarasol.sona.accessor.IBaseContainerBlockEntityAccessor;
+import com.scarasol.sona.accessor.mixin.IBaseContainerBlockEntityAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.level.Level;
