@@ -55,15 +55,12 @@
     "GameRendererMixin",
     "GuiMixin",
     "HumanoidArmorLayerMixin",
-    "ItemRendererMixin",
     "KeyboardHandlerMixin",
     "LivingEntityRendererMixin",
     "LocalPlayerMixin",
     "RenderLayerMixin",
     "TextureStateShardAccessor",
-    "geckolib.GeckoItemRendererMixin",
     "geckolib.GeoEntityRendererMixin",
-    "tacz.TACZRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

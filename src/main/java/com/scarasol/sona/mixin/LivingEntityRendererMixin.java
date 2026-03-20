@@ -9,6 +9,7 @@ import com.scarasol.sona.client.layer.InfectionLayer;
 import com.scarasol.sona.client.renderer.SonaRenderType;
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.manager.InfectionManager;
+import com.scarasol.sona.compat.ShaderCompatUtil;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -59,7 +60,13 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
         if (!livingEntity.isInvisible() && livingEntity instanceof ILivingEntityAccessor accessor) {
             if (accessor.getCamouflageAmplifier() > 0) {
                 ResourceLocation resourcelocation = this.getTextureLocation(livingEntity);
-                cir.setReturnValue(SonaRenderType.entityDither(resourcelocation));
+
+                // 【核心修改】：在这里引入光影检测
+                if (ShaderCompatUtil.isShaderActive()) {
+                    cir.setReturnValue(RenderType.entityTranslucent(resourcelocation));
+                } else {
+                    cir.setReturnValue(SonaRenderType.entityDither(resourcelocation));
+                }
             }
         }
     }

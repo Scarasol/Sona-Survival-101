@@ -3,6 +3,7 @@ package com.scarasol.sona.mixin;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.scarasol.sona.client.renderer.AlphaVertexConsumer;
 import com.scarasol.sona.client.renderer.SonaRenderType;
+import com.scarasol.sona.compat.ShaderCompatUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -32,6 +33,9 @@ public abstract class BufferSourceMixin {
             VertexConsumer wrappedConsumer = null;
             String typeName = renderType.toString();
 
+            // 缓存当前光影状态
+            boolean isShaderActive = ShaderCompatUtil.isShaderActive();
+
             try {
                 // 1. 尝试拦截 TACZ、GeckoLib 动态生成的带有专属贴图的 RenderType
                 if (renderType instanceof CompositeRenderTypeAccessor accessor) {
@@ -46,8 +50,10 @@ public abstract class BufferSourceMixin {
                             // 安全过滤 1：排除附魔发光层
                             // 安全过滤 2：排除 TACZ 的准星、激光等纯色发光材质（通常带有 "light" 或 "beam" 等关键字）
                             if (!texture.getPath().contains("enchanted_item_glint") && !typeName.contains("beam") && !typeName.contains("lightning") && !typeName.contains("lines")) {
-                                RenderType ditherType = SonaRenderType.entityDither(texture);
-                                wrappedConsumer = new AlphaVertexConsumer(this.getBuffer(ditherType), alpha);
+
+                                // 【兼容核心】：光影开启时，强制回退为原版半透明渲染；原版环境继续使用 dither 节省性能
+                                RenderType targetType = isShaderActive ? RenderType.entityTranslucent(texture) : SonaRenderType.entityDither(texture);
+                                wrappedConsumer = new AlphaVertexConsumer(this.getBuffer(targetType), alpha);
                             }
                         }
                     }
@@ -58,7 +64,9 @@ public abstract class BufferSourceMixin {
                     if (renderType == RenderType.solid() || renderType == RenderType.cutout() ||
                             renderType == RenderType.cutoutMipped() || renderType == RenderType.translucent()) {
 
-                        wrappedConsumer = new AlphaVertexConsumer(this.getBuffer(SonaRenderType.itemDither()), alpha);
+                        // 【兼容核心】：光影下基础物品同样回退到半透明
+                        RenderType targetType = isShaderActive ? RenderType.translucent() : SonaRenderType.itemDither();
+                        wrappedConsumer = new AlphaVertexConsumer(this.getBuffer(targetType), alpha);
                     }
                     // 3. 【精确白名单过滤】只有在名字中包含实体、护甲、方块模型等核心标识时，才允许包装
                     else if (typeName.contains("entity") || typeName.contains("armor") || typeName.contains("item") || typeName.contains("cutout") || typeName.contains("translucent")) {

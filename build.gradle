@@ -143,7 +143,6 @@ dependencies {
     implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:7745481")
     runtimeOnly fg.deobf("curse.maven:no-chat-reports-634062:4610474")
     implementation fg.deobf("curse.maven:curios-309927:6418456")
-//    implementation fg.deobf("curse.maven:geckolib-388172:6333474")
     implementation fg.deobf("curse.maven:geckolib-388172:7025129")
     implementation fg.deobf("curse.maven:superb-warfare-1218165:7292685")
     runtimeOnly fg.deobf("curse.maven:jade-324717:6855440")
