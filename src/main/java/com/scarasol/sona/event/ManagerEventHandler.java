@@ -31,6 +31,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
@@ -377,21 +378,42 @@ public class ManagerEventHandler {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
-    public static void fogColor(ViewportEvent.RenderFog event) {
+    public static void onRenderFog(ViewportEvent.RenderFog event) {
         ClientLevel level = Minecraft.getInstance().level;
-        if (InfectionManager.canChunkInfection(level) && event.getMode() == FogRenderer.FogMode.FOG_TERRAIN) {
-            Vec3 vec3 = event.getCamera().getPosition();
-            Vec3 color = InfectionManager.getInfectionChunkFogColor(Vec3.ZERO, vec3, level);
-            if (color != null) {
-                double infectionLevel = InfectionManager.getAveZoneInfectionInRender(level, event.getCamera().getPosition());
-
-                event.setNearPlaneDistance(0);
-                event.setFarPlaneDistance((float) ((1 - infectionLevel / 100) * event.getFarPlaneDistance()));
-                event.setFogShape(FogShape.SPHERE);
-                event.setCanceled(true);
-                RenderSystem.setShaderFogColor((float) color.x, (float) color.y, (float) color.z, (float) (infectionLevel / 200F));
-            }
+        if (level == null || !InfectionManager.canChunkInfection(level) || event.getMode() != FogRenderer.FogMode.FOG_TERRAIN) {
+            return;
         }
+
+        double infectionLevel = InfectionManager.getAveZoneInfectionInRender(level, event.getCamera().getPosition());
+
+        // 如果没有感染，直接返回，完全由原版接管雾气渲染
+        if (infectionLevel <= 0) {
+            return;
+        }
+
+        // 将感染值转换为 0.0 到 1.0 的混合权重（假设 100 是最大影响值）
+        float weight = Mth.clamp((float) (infectionLevel / 100.0), 0.0F, 1.0F);
+
+        // 获取当前（原版或其他模组处理后）的雾气距离
+        float vanillaNear = event.getNearPlaneDistance();
+        float vanillaFar = event.getFarPlaneDistance();
+
+        // 计算混合后的距离：
+        // 感染越深，近平面越趋近于 0（雾气贴脸）
+        float newNear = Mth.lerp(weight, vanillaNear, 0.0F);
+        // 感染越深，远平面越趋近于较近的距离（比如原版能见度缩减到只剩 5% 或者你原来的公式）
+        float newFar = Mth.lerp(weight, vanillaFar, vanillaFar * (1.0F - weight));
+
+        event.setNearPlaneDistance(newNear);
+        event.setFarPlaneDistance(newFar);
+
+        // 只有在感染较深时（如权重大于 0.1），才将雾的形状强制转为球形，或者你也可以全程保持球形
+        if (weight > 0.3F) {
+            event.setFogShape(FogShape.SPHERE);
+        }
+
+        // 取消原版的距离设定，应用我们修改后的距离
+        event.setCanceled(true);
     }
 
 //    @SubscribeEvent
@@ -452,7 +474,7 @@ public class ManagerEventHandler {
 //    @SubscribeEvent(priority = EventPriority.LOW)
 //    public static void broadcastMessage(ServerChatEvent event){
 //        Player player = event.getPlayer();
-//        Component component = event.getMessage();
+//        Component component = eve nt.getMessage();
 //        ChatManager.broadcastMessage(player, component);
 //        if (event.isCancelable())
 //            event.setCanceled(true);

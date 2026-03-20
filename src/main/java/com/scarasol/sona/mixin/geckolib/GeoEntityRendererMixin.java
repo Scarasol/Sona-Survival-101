@@ -29,7 +29,6 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 @Mixin(value = GeoEntityRenderer.class)
 public abstract class GeoEntityRendererMixin<T extends Entity & GeoAnimatable> extends EntityRenderer<T> implements GeoRenderer<T> {
 
-
     @Shadow public abstract GeoEntityRenderer<T> addRenderLayer(GeoRenderLayer<T> renderLayer);
 
     protected GeoEntityRendererMixin(EntityRendererProvider.Context context) {
@@ -48,16 +47,13 @@ public abstract class GeoEntityRendererMixin<T extends Entity & GeoAnimatable> e
             int amplifier = livingEntityAccessor.getCamouflageAmplifier();
 
             if (amplifier > 0) {
-
                 float alpha = livingEntityAccessor.getCamouflageAlpha();
                 if (alpha == 0) {
                     ci.cancel();
                 } else if (alpha < 1) {
-                    RenderSystem.enableBlend();
-                    RenderSystem.defaultBlendFunc();
+                    // 只向着色器传递颜色和 alpha，由着色器执行丢弃像素，不再开启 Blend
                     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
                 }
-
             }
         }
     }
@@ -65,13 +61,11 @@ public abstract class GeoEntityRendererMixin<T extends Entity & GeoAnimatable> e
     @Inject(method = "render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("TAIL"))
     private void sona$postRender(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, CallbackInfo ci) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.disableBlend();
+        // 上面移除了 enableBlend()，这里也移除了 disableBlend()
     }
 
     @Inject(method = "<init>(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;Lsoftware/bernie/geckolib/model/GeoModel;)V", at = @At("TAIL"))
     private void sona$geoEntityRenderer(EntityRendererProvider.Context renderManager, GeoModel model, CallbackInfo ci) {
         addRenderLayer(new GeoInfectionLayer(this));
     }
-
-
 }
