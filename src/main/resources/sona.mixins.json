@@ -52,6 +52,7 @@
     "ClientLevelMixin",
     "CompositeRenderTypeAccessor",
     "CompositeStateAccessor",
+    "EntityRenderDispatcherMixin",
     "GameRendererMixin",
     "GuiMixin",
     "HumanoidArmorLayerMixin",
@@ -60,7 +61,7 @@
     "LocalPlayerMixin",
     "RenderLayerMixin",
     "TextureStateShardAccessor",
-    "geckolib.GeoEntityRendererMixin",
+    "geckolib.GeoEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

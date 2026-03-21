@@ -1,6 +1,8 @@
 package com.scarasol.sona.mixin;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.scarasol.sona.client.renderer.AlphaVertexConsumer;
 import com.scarasol.sona.client.renderer.SonaRenderType;
 import com.scarasol.sona.compat.ShaderCompatUtil;
@@ -28,66 +30,59 @@ public abstract class BufferSourceMixin {
     private void sona$globalBufferIntercept(RenderType renderType, CallbackInfoReturnable<VertexConsumer> cir) {
         Float alpha = SonaRenderType.camoAlpha.get();
         if (alpha != null && alpha < 1.0f) {
+            // 暂时移除，防止后续 this.getBuffer(targetType) 触发无限递归
             SonaRenderType.camoAlpha.remove();
 
-            VertexConsumer wrappedConsumer = null;
-            String typeName = renderType.toString();
-
-            // 缓存当前光影状态
-            boolean isShaderActive = ShaderCompatUtil.isShaderActive();
-
             try {
-                // 1. 尝试拦截 TACZ、GeckoLib 动态生成的带有专属贴图的 RenderType
-                if (renderType instanceof CompositeRenderTypeAccessor accessor) {
-                    RenderType.CompositeState state = accessor.sona$getState();
-                    RenderStateShard.EmptyTextureStateShard textureState = ((CompositeStateAccessor) (Object) state).sona$getTextureState();
+                // 1. 安全放行非多边形渲染 (线条、碰撞箱、部分特殊激光等)，直接绕过包装
+                if (renderType.mode() != VertexFormat.Mode.QUADS && renderType.mode() != VertexFormat.Mode.TRIANGLES) {
+                    cir.setReturnValue(this.getBuffer(renderType));
+                    return;
+                }
 
-                    if (textureState instanceof TextureStateShardAccessor texAccessor) {
-                        Optional<ResourceLocation> optTexture = texAccessor.sona$getTexture();
-                        if (optTexture.isPresent()) {
-                            ResourceLocation texture = optTexture.get();
+                VertexFormat format = renderType.format();
+                boolean isShaderActive = ShaderCompatUtil.isShaderActive();
+                RenderType targetType = renderType;
+                boolean shouldWrap = false;
 
-                            // 安全过滤 1：排除附魔发光层
-                            // 安全过滤 2：排除 TACZ 的准星、激光等纯色发光材质（通常带有 "light" 或 "beam" 等关键字）
-                            if (!texture.getPath().contains("enchanted_item_glint") && !typeName.contains("beam") && !typeName.contains("lightning") && !typeName.contains("lines")) {
+                // 2. 方块模型 (原版基础物品兜底：手持普通方块、掉落物等)
+                if (format == DefaultVertexFormat.BLOCK) {
+                    // affectsCrumbling 属性在基础图层(Solid, Cutout)为 true，破坏动画层为 false
+                    if (renderType.affectsCrumbling()) {
+                        targetType = isShaderActive ? RenderType.translucent() : SonaRenderType.itemDither();
+                        shouldWrap = true;
+                    }
+                }
 
-                                // 【兼容核心】：光影开启时，强制回退为原版半透明渲染；原版环境继续使用 dither 节省性能
-                                RenderType targetType = isShaderActive ? RenderType.entityTranslucent(texture) : SonaRenderType.entityDither(texture);
-                                wrappedConsumer = new AlphaVertexConsumer(this.getBuffer(targetType), alpha);
+                else if (format == DefaultVertexFormat.NEW_ENTITY) {
+                    if (renderType instanceof CompositeRenderTypeAccessor accessor) {
+                        RenderType.CompositeState state = accessor.sona$getState();
+                        RenderStateShard.EmptyTextureStateShard textureState = ((CompositeStateAccessor) (Object) state).sona$getTextureState();
+
+                        if (textureState instanceof TextureStateShardAccessor texAccessor) {
+                            Optional<ResourceLocation> optTexture = texAccessor.sona$getTexture();
+                            if (optTexture.isPresent()) {
+                                ResourceLocation texture = optTexture.get();
+                                // 强制回退为支持 Alpha 的半透明渲染或原版抖动渲染
+                                targetType = isShaderActive ? RenderType.entityTranslucent(texture) : SonaRenderType.entityDither(texture);
+                                shouldWrap = true;
                             }
                         }
                     }
                 }
+                // 情景 C: 其他格式 (POSITION_TEX为附魔发光，POSITION_COLOR为文字/闪电等) 自动放行
 
-                if (wrappedConsumer == null) {
-                    // 2. 原版基础物品兜底 (使用全局方块图集)
-                    if (renderType == RenderType.solid() || renderType == RenderType.cutout() ||
-                            renderType == RenderType.cutoutMipped() || renderType == RenderType.translucent()) {
-
-                        // 【兼容核心】：光影下基础物品同样回退到半透明
-                        RenderType targetType = isShaderActive ? RenderType.translucent() : SonaRenderType.itemDither();
-                        wrappedConsumer = new AlphaVertexConsumer(this.getBuffer(targetType), alpha);
-                    }
-                    // 3. 【精确白名单过滤】只有在名字中包含实体、护甲、方块模型等核心标识时，才允许包装
-                    else if (typeName.contains("entity") || typeName.contains("armor") || typeName.contains("item") || typeName.contains("cutout") || typeName.contains("translucent")) {
-
-                        // 过滤掉极其危险的特殊渲染器（例如：闪电 lightning、连线 lines、文字 text、发光方块边框、激光 beam）
-                        if (!typeName.contains("lines") && !typeName.contains("lightning") && !typeName.contains("text") && !typeName.contains("beam") && !typeName.contains("glint") && !typeName.contains("crumbling")) {
-                            wrappedConsumer = new AlphaVertexConsumer(this.getBuffer(renderType), alpha);
-                        }
-                    }
-
-                    // 4. 如果上面的条件全都不满足（即特殊线条、激光、UI文字等），直接原样返回，彻底绕过包装器
-                    if (wrappedConsumer == null) {
-                        wrappedConsumer = this.getBuffer(renderType);
-                    }
+                // 4. 应用包装逻辑
+                if (shouldWrap) {
+                    cir.setReturnValue(new AlphaVertexConsumer(this.getBuffer(targetType), alpha));
+                } else {
+                    cir.setReturnValue(this.getBuffer(renderType)); // 原样返回
                 }
 
             } finally {
+                // 恢复 ThreadLocal，以便调用栈中更上层的代码继续使用
                 SonaRenderType.camoAlpha.set(alpha);
             }
-
-            cir.setReturnValue(wrappedConsumer);
         }
     }
 }
