@@ -27,7 +27,7 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
  * @author Scarasol
  */
 @Pseudo
-@Mixin(value = GeoEntityRenderer.class)
+@Mixin(value = GeoEntityRenderer.class, remap = false)
 public abstract class GeoEntityRendererMixin<T extends Entity & GeoAnimatable> extends EntityRenderer<T> implements GeoRenderer<T> {
 
     @Shadow public abstract GeoEntityRenderer<T> addRenderLayer(GeoRenderLayer<T> renderLayer);
@@ -36,7 +36,7 @@ public abstract class GeoEntityRendererMixin<T extends Entity & GeoAnimatable> e
         super(context);
     }
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", cancellable = true, at = @At("HEAD"))
+    @Inject(method = "render", cancellable = true, at = @At("HEAD"))
     private void sona$preRender(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, CallbackInfo ci) {
 
         if (entity instanceof ILivingEntityAccessor livingEntityAccessor) {
@@ -55,7 +55,7 @@ public abstract class GeoEntityRendererMixin<T extends Entity & GeoAnimatable> e
         }
     }
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("TAIL"))
+    @Inject(method = "render", at = @At("TAIL"))
     private void sona$postRender(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, CallbackInfo ci) {
         // 清理线程状态，确保不污染其他渲染
         SonaRenderType.camoAlpha.remove();

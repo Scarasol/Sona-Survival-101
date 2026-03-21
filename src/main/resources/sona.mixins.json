@@ -64,7 +64,8 @@
     "tacz.TACZAttachmentRenderMixin",
     "tacz.TACZBedrockPartMixin",
     "tacz.TACZGunItemRendererWrapperMixin",
-    "geckolib.GeoEntityRendererMixin"
+    "geckolib.GeoEntityRendererMixin",
+    "geckolib.GeoItemRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
