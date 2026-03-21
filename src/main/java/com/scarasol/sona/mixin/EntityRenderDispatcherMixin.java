@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.scarasol.sona.accessor.mixin.ILivingEntityAccessor;
 import com.scarasol.sona.client.renderer.AlphaVertexConsumer;
+import com.scarasol.sona.client.renderer.CamouflageRenderUtil;
 import com.scarasol.sona.client.renderer.SonaRenderType;
 import com.scarasol.sona.compat.ShaderCompatUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -85,7 +86,7 @@ public abstract class EntityRenderDispatcherMixin {
             // 这些图层全部不属于 BLOCK 或 NEW_ENTITY，会直接忽略执行包装代码，杜绝渲染管线报错
 
             if (shouldWrap) {
-                return new AlphaVertexConsumer(bufferSource.getBuffer(targetType), alpha);
+                return new AlphaVertexConsumer(bufferSource.getBuffer(targetType), CamouflageRenderUtil.itemAlpha(alpha));
             }
 
             return bufferSource.getBuffer(renderType);

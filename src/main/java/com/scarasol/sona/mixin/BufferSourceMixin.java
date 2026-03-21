@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.scarasol.sona.client.renderer.AlphaVertexConsumer;
+import com.scarasol.sona.client.renderer.CamouflageRenderUtil;
 import com.scarasol.sona.client.renderer.SonaRenderType;
 import com.scarasol.sona.compat.ShaderCompatUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -74,7 +75,7 @@ public abstract class BufferSourceMixin {
 
                 // 4. 应用包装逻辑
                 if (shouldWrap) {
-                    cir.setReturnValue(new AlphaVertexConsumer(this.getBuffer(targetType), alpha));
+                    cir.setReturnValue(new AlphaVertexConsumer(this.getBuffer(targetType), CamouflageRenderUtil.itemAlpha(alpha)));
                 } else {
                     cir.setReturnValue(this.getBuffer(renderType)); // 原样返回
                 }

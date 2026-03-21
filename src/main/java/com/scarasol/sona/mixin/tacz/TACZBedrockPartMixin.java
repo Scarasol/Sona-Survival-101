@@ -1,5 +1,6 @@
 package com.scarasol.sona.mixin.tacz;
 
+import com.scarasol.sona.client.renderer.CamouflageRenderUtil;
 import com.scarasol.sona.client.renderer.SonaRenderType;
 import com.tacz.guns.client.model.bedrock.BedrockPart;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +21,7 @@ public abstract class TACZBedrockPartMixin {
         if (camoAlpha == null || camoAlpha >= 1.0f) {
             return alpha;
         }
-        return alpha * camoAlpha;
+        return alpha * CamouflageRenderUtil.itemAlpha(camoAlpha);
     }
 
     @ModifyVariable(
@@ -34,6 +35,6 @@ public abstract class TACZBedrockPartMixin {
         if (camoAlpha == null || camoAlpha >= 1.0f) {
             return alpha;
         }
-        return alpha * camoAlpha;
+        return alpha * CamouflageRenderUtil.itemAlpha(camoAlpha);
     }
 }
