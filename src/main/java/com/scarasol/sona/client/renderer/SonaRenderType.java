@@ -61,6 +61,26 @@ public class SonaRenderType extends RenderType {
         );
     }
 
+    public static RenderType translucentLinesNoDepth(double width) {
+        return RenderType.create(
+                "translucent_lines_no_depth",
+                DefaultVertexFormat.POSITION_COLOR_NORMAL,
+                VertexFormat.Mode.LINES,
+                256,
+                true,
+                true,
+                RenderType.CompositeState.builder()
+                        .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeLinesShader))
+                        .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(width)))
+                        .setTransparencyState(RenderStateShard.LIGHTNING_TRANSPARENCY)
+                        .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
+                        .setCullState(RenderStateShard.NO_CULL)
+                        .setLightmapState(RenderStateShard.LIGHTMAP)
+                        .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+                        .createCompositeState(false)
+        );
+    }
+
     public static RenderType entityDither(ResourceLocation location) {
         RenderType.CompositeState state = RenderType.CompositeState.builder()
                 .setShaderState(new RenderStateShard.ShaderStateShard(() -> SonaShaders.entityDitherShader))

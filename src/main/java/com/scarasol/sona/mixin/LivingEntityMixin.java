@@ -80,6 +80,9 @@ public abstract class LivingEntityMixin extends Entity implements ILivingEntityA
     private static final EntityDataAccessor<Integer> CAMOUFLAGE_AMPLIFIER = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.INT);
 
     @Unique
+    private static final EntityDataAccessor<Integer> EXPOSURE_AMPLIFIER = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.INT);
+
+    @Unique
     private static final EntityDataAccessor<Boolean> INFECTION_LAYER = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BOOLEAN);
 
     @Unique
@@ -142,6 +145,18 @@ public abstract class LivingEntityMixin extends Entity implements ILivingEntityA
     @Unique
     public int getCamouflageAmplifier() {
         return this.entityData.get(CAMOUFLAGE_AMPLIFIER);
+    }
+
+    @Override
+    @Unique
+    public void setExposureAmplifier(int exposureAmplifier) {
+        this.entityData.set(EXPOSURE_AMPLIFIER, exposureAmplifier);
+    }
+
+    @Override
+    @Unique
+    public int getExposureAmplifier() {
+        return this.entityData.get(EXPOSURE_AMPLIFIER);
     }
 
     @Override
@@ -221,6 +236,7 @@ public abstract class LivingEntityMixin extends Entity implements ILivingEntityA
         this.entityData.define(INJURY_LEVEL, 100F);
         this.entityData.define(BANDAGE_LEVEL, 0F);
         this.entityData.define(CAMOUFLAGE_AMPLIFIER, 0);
+        this.entityData.define(EXPOSURE_AMPLIFIER, -1);
         this.entityData.define(INFECTION_LAYER, false);
     }
 
@@ -317,6 +333,11 @@ public abstract class LivingEntityMixin extends Entity implements ILivingEntityA
                 setCamouflageAmplifier(amplifier);
             } else {
                 setCamouflageAmplifier(0);
+            }
+            if (hasEffect(SonaMobEffects.EXPOSURE.get())) {
+                setExposureAmplifier(getEffect(SonaMobEffects.EXPOSURE.get()).getAmplifier());
+            } else {
+                setExposureAmplifier(-1);
             }
             if (gameTime % 20 == 0) {
                 float laceration = getSona$laceration();

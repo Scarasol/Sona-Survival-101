@@ -12,6 +12,8 @@ public interface ILivingEntityAccessor {
 
     int getCamouflageAmplifier();
 
+    int getExposureAmplifier();
+
     boolean isSona$carapace();
 
     boolean getInfectionLayer();
@@ -23,6 +25,8 @@ public interface ILivingEntityAccessor {
     void setBandageLevel(float bandageLevel);
 
     void setCamouflageAmplifier(int camouflageAmplifier);
+
+    void setExposureAmplifier(int exposureAmplifier);
 
     void setSona$carapace(boolean sona$carapace);
 
