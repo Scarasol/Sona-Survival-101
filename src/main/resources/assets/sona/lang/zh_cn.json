@@ -35,7 +35,7 @@
   "effect.sona.camouflage": "迷彩",
   "effect.sona.camouflage.description": "使目标在较远距离时难以被索敌。",
   "effect.sona.confusion": "混乱",
-  "effect.sona.confusion.description": "使目标无法索敌，并对玩家造成反胃效果。",
+  "effect.sona.confusion.description": "使目标无法索敌，并随机打乱玩家的移动方向。",
   "effect.sona.corrosion": "腐蚀",
   "effect.sona.corrosion.description": "逐渐腐蚀并损坏护甲。若目标无护甲则直接造成伤害。若目标存在黏液效果，则会触发爆炸反应。",
   "effect.sona.exposure": "暴露",

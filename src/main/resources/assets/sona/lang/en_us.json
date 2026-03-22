@@ -35,7 +35,7 @@
   "effect.sona.camouflage": "Camouflage",
   "effect.sona.camouflage.description": "Makes the enemies harder to detect from a distance.",
   "effect.sona.confusion": "Confusion",
-  "effect.sona.confusion.description": "Prevents the target from locking onto enemies and causes nausea to players.",
+  "effect.sona.confusion.description": "Prevents enemies from locking onto the target and scrambles player movement directions.",
   "effect.sona.corrosion": "Corrosion",
   "effect.sona.corrosion.description": "Gradually corrodes and damages armor. If the target has no armor, it deals direct damage. If the target is affected by Sliminess, Corrosion triggers an explosive reaction.",
   "effect.sona.exposure": "Exposure",
