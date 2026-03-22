@@ -58,6 +58,10 @@ public class SoundDecoy extends Mob {
         return soundEvent;
     }
 
+    public int getAmplifier() {
+        return amplifier;
+    }
+
     public void setSoundEvent(String soundEvent) {
         this.soundEvent = soundEvent;
     }

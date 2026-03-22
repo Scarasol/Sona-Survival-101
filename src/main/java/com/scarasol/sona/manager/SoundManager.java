@@ -2,6 +2,7 @@ package com.scarasol.sona.manager;
 
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.entity.SoundDecoy;
+import com.scarasol.sona.entity.ai.goal.SoundAttractionGoal;
 import com.scarasol.sona.event.SonaEventHooks;
 import com.scarasol.sona.event.server.SonaSoundEvent;
 import com.scarasol.sona.init.SonaEntities;
@@ -17,7 +18,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -58,7 +58,7 @@ public class SoundManager {
 
     public static void insertAi(Mob mob){
         if (isSoundAttractedMob(mob))
-            mob.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(mob, Mob.class, 5, false, false, livingEntity -> livingEntity instanceof SoundDecoy));
+            mob.goalSelector.addGoal(3, new SoundAttractionGoal(mob, 1.0D, 2.5D));
     }
 
     public static int getIndex(String soundName){
