@@ -104,6 +104,7 @@ public class CommonConfig {
 
     public static final ForgeConfigSpec.ConfigValue<Boolean> PHYSICAL_EFFECT_REMOVE;
     public static final ForgeConfigSpec.ConfigValue<Boolean> ENHANCED_CAMOUFLAGE;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> EXPOSURE_INDICATOR;
     public static final ForgeConfigSpec.ConfigValue<Double> STUN_DAMAGE_MULTIPLIER;
     public static final ForgeConfigSpec.ConfigValue<Boolean> OVER_DOT;
 
@@ -427,6 +428,8 @@ public class CommonConfig {
                 .define("Physical Effects Remove", false);
         ENHANCED_CAMOUFLAGE = BUILDER.comment("Whether or not to enable enhanced camouflage, when enabled, monsters will lose their target if there is a line of sight obstacle between them when tracking a camouflaged target.")
                 .define("Enhanced Camouflage", false);
+        EXPOSURE_INDICATOR = BUILDER.comment("Whether entities with Exposure and Sound Decoys render position indicators for players.")
+                .define("Exposure Indicator", true);
         STUN_DAMAGE_MULTIPLIER = BUILDER.comment("The damage received by a stunned creature is increased by a certain multiplier of the original damage.")
                 .defineInRange("Stun Damage Multiplier", 1.2, 1.0, 10.0);
         OVER_DOT = BUILDER.comment("Whether or not the dot damage from effect such as ignition can bypass the invulnerable time.")

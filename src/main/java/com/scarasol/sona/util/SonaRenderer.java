@@ -4,19 +4,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.scarasol.sona.client.renderer.SonaRenderType;
-import com.scarasol.sona.network.NetworkHandler;
-import com.scarasol.sona.network.PositionIndicatorPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.PacketDistributor;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -27,18 +23,6 @@ import java.util.Random;
  * @author Scarasol
  */
 public class SonaRenderer {
-
-    public static void emitPositionIndicator(Level level, Vec3 pos, double renderRange, int duration) {
-        if (!(level instanceof ServerLevel serverLevel)) {
-            return;
-        }
-        double broadcastRange = Math.max(renderRange + 16.0D, 96.0D);
-        NetworkHandler.PACKET_HANDLER.send(
-                PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(pos.x, pos.y, pos.z, broadcastRange, serverLevel.dimension())),
-                new PositionIndicatorPacket(pos.x, pos.y, pos.z, renderRange, duration)
-        );
-    }
-
 
     public static void renderLineBeam(
             PoseStack poseStack,

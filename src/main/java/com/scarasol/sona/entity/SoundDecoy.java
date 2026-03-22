@@ -4,7 +4,7 @@ import com.scarasol.sona.accessor.mixin.ILivingEntityAccessor;
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.init.SonaEntities;
 import com.scarasol.sona.init.SonaMobEffects;
-import com.scarasol.sona.util.SonaRenderer;
+import com.scarasol.sona.util.ServerRenderEmitter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -120,8 +120,8 @@ public class SoundDecoy extends Mob {
         if ((Object) this instanceof ILivingEntityAccessor accessor) {
             accessor.setExposureAmplifier(this.amplifier);
         }
-        if (!level().isClientSide() && tickCount % 10 == 0) {
-            SonaRenderer.emitPositionIndicator(level(), position(), (amplifier + 1) * 16.0D, 14);
+        if (!level().isClientSide() && CommonConfig.EXPOSURE_INDICATOR.get() && tickCount % 10 == 0) {
+            ServerRenderEmitter.emitPositionIndicator(level(), position(), (amplifier + 1) * 16.0D, 14);
         }
         if (life % 10 == 0 && !level().getEntitiesOfClass(SoundDecoy.class, getBoundingBox().inflate(8), soundDecoy -> soundDecoy.amplifier >= this.amplifier && soundDecoy != this).isEmpty()) {
             this.discard();

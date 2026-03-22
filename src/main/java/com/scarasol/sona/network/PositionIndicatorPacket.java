@@ -1,7 +1,9 @@
 package com.scarasol.sona.network;
 
-import com.scarasol.sona.client.renderer.PositionIndicatorManager;
+import com.scarasol.sona.client.renderer.ClientRenderDispatcher;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -36,9 +38,29 @@ public class PositionIndicatorPacket {
     public static void handler(PositionIndicatorPacket msg, Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
             if (!context.get().getDirection().getReceptionSide().isServer()) {
-                PositionIndicatorManager.addIndicator(msg.x, msg.y, msg.z, msg.renderRange, msg.duration);
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientRenderDispatcher.handlePositionIndicator(msg));
             }
         });
         context.get().setPacketHandled(true);
+    }
+
+    public double x() {
+        return x;
+    }
+
+    public double y() {
+        return y;
+    }
+
+    public double z() {
+        return z;
+    }
+
+    public double renderRange() {
+        return renderRange;
+    }
+
+    public int duration() {
+        return duration;
     }
 }

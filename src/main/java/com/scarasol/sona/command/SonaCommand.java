@@ -2,7 +2,7 @@ package com.scarasol.sona.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.scarasol.sona.util.SonaRenderer;
+import com.scarasol.sona.util.ServerRenderEmitter;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
@@ -25,7 +25,7 @@ public class SonaCommand {
                                                     double durationSeconds = DoubleArgumentType.getDouble(context, "duration");
                                                     int durationTicks = Math.max(1, Mth.floor(durationSeconds * 20.0D));
 
-                                                    SonaRenderer.emitPositionIndicator(context.getSource().getLevel(), pos, range, durationTicks);
+                                                    ServerRenderEmitter.emitPositionIndicator(context.getSource().getLevel(), pos, range, durationTicks);
                                                     context.getSource().sendSuccess(() -> Component.translatable("command.sona.indicator.success", String.format("%.2f", pos.x), String.format("%.2f", pos.y), String.format("%.2f", pos.z), String.format("%.2f", range), String.format("%.2f", durationSeconds)), true);
                                                     return 1;
                                                 }))))));
