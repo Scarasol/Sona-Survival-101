@@ -36,6 +36,10 @@ public final class PositionIndicatorManager {
         return List.copyOf(INDICATORS);
     }
 
+    public static void clear() {
+        INDICATORS.clear();
+    }
+
     public record Indicator(Vec3 pos, double renderRange, long expireAt) {
     }
 }

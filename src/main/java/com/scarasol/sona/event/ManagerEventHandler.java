@@ -8,6 +8,7 @@ import com.scarasol.sona.accessor.mixin.IBaseContainerBlockEntityAccessor;
 import com.scarasol.sona.accessor.mixin.IChunkAccessor;
 import com.scarasol.sona.accessor.mixin.ILivingEntityAccessor;
 import com.scarasol.sona.accessor.mixin.IServerLevelAccessor;
+import com.scarasol.sona.client.renderer.PositionIndicatorManager;
 import com.scarasol.sona.command.InfectionCommand;
 import com.scarasol.sona.command.InjuryCommand;
 import com.scarasol.sona.command.RotCommand;
@@ -51,6 +52,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -455,6 +457,20 @@ public class ManagerEventHandler {
             }
         }
 
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @SubscribeEvent
+    public static void onClientLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+        PositionIndicatorManager.clear();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @SubscribeEvent
+    public static void onClientLevelUnload(LevelEvent.Unload event) {
+        if (event.getLevel() instanceof ClientLevel) {
+            PositionIndicatorManager.clear();
+        }
     }
 
     @SubscribeEvent

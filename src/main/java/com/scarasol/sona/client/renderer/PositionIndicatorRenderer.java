@@ -6,13 +6,11 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -25,7 +23,7 @@ public final class PositionIndicatorRenderer {
 
     private static final float ARROW_ALPHA_MIN = 0.18F;
     private static final float ARROW_ALPHA_MAX = 0.45F;
-    private static final float HALO_ALPHA_MAX = 0.52F;
+    private static final float HALO_ALPHA_MAX = 1;
     private static final int HALO_RIPPLE_COUNT = 4;
     private static final float HALO_LAYER_DELAY = 0.12F;
     private static final float INDICATOR_RING_RADIUS_FACTOR = 0.24F;
@@ -51,9 +49,6 @@ public final class PositionIndicatorRenderer {
         int height = minecraft.getWindow().getGuiScaledHeight();
         float ripple = getRippleProgress(player.level().getGameTime(), partialTick);
         float alpha = getArrowAlpha(ripple);
-        if (alpha <= 0.0F) {
-            return;
-        }
 
         float centerX = width * 0.5F;
         float centerY = height * 0.5F;
@@ -61,6 +56,9 @@ public final class PositionIndicatorRenderer {
 
         for (TargetInfo target : targets) {
             if (target.onScreen) {
+                continue;
+            }
+            if (alpha <= 0.0F) {
                 continue;
             }
             float angle = (float) Math.atan2(target.screenY, target.screenX);
@@ -82,8 +80,16 @@ public final class PositionIndicatorRenderer {
         }
 
         Vec3 camPos = camera.getPosition();
-        MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
         float ripple = getRippleProgress(player.level().getGameTime(), partialTick);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        BufferBuilder builder = Tesselator.getInstance().getBuilder();
+        builder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         poseStack.pushPose();
         poseStack.translate(-camPos.x, -camPos.y, -camPos.z);
 
@@ -92,6 +98,8 @@ public final class PositionIndicatorRenderer {
                 continue;
             }
 
+            double distance = target.worldPos.distanceTo(camPos);
+            float thicknessScale = Mth.clamp(1.0F + (float) distance * 0.032F, 1.0F, 4.25F);
             poseStack.pushPose();
             poseStack.translate(target.worldPos.x, target.worldPos.y, target.worldPos.z);
             poseStack.mulPose(camera.rotation());
@@ -107,14 +115,18 @@ public final class PositionIndicatorRenderer {
                 if (alpha <= 0) {
                     continue;
                 }
-                renderBillboardHalo(poseStack, bufferSource, radius, 6.4F, RED, alpha);
-                renderBillboardHalo(poseStack, bufferSource, Math.max(0.12F, radius - 0.10F), 4.8F, RED, alpha / 2);
+                renderBillboardHalo(builder, poseStack.last().pose(), radius, 0.035F * thicknessScale, 48, RED, alpha);
+                renderBillboardHalo(builder, poseStack.last().pose(), Math.max(0.12F, radius - 0.10F), 0.018F * thicknessScale, 42, RED, alpha / 3);
             }
             poseStack.popPose();
         }
 
-        bufferSource.endBatch();
+        BufferUploader.drawWithShader(builder.end());
         poseStack.popPose();
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
     }
 
     private static List<TargetInfo> collectTargets(Player player, float partialTick) {
@@ -275,27 +287,33 @@ public final class PositionIndicatorRenderer {
         builder.vertex(matrix, x3, y3, 0).color(r, g, b, a).endVertex();
     }
 
-    private static void renderBillboardHalo(PoseStack poseStack, MultiBufferSource bufferSource, float radius, float width, int color, int alpha) {
-        VertexConsumer builder = bufferSource.getBuffer(SonaRenderType.translucentLinesNoDepth(width));
-        Matrix4f matrix = poseStack.last().pose();
-        int segments = 48;
+    private static void renderBillboardHalo(BufferBuilder builder, Matrix4f matrix, float radius, float thickness, int segments, int color, int alpha) {
         int r = (color >> 16) & 255;
         int g = (color >> 8) & 255;
         int b = color & 255;
+        float outerRadius = radius + thickness * 0.5F;
+        float innerRadius = Math.max(0.0F, radius - thickness * 0.5F);
 
         for (int i = 0; i < segments; i++) {
             float a0 = (float) (Math.PI * 2.0D * i / segments);
             float a1 = (float) (Math.PI * 2.0D * (i + 1) / segments);
-            putLine(builder, matrix,
-                    Mth.cos(a0) * radius, Mth.sin(a0) * radius, 0,
-                    Mth.cos(a1) * radius, Mth.sin(a1) * radius, 0,
-                    r, g, b, alpha);
-        }
-    }
+            float outerX0 = Mth.cos(a0) * outerRadius;
+            float outerY0 = Mth.sin(a0) * outerRadius;
+            float outerX1 = Mth.cos(a1) * outerRadius;
+            float outerY1 = Mth.sin(a1) * outerRadius;
+            float innerX0 = Mth.cos(a0) * innerRadius;
+            float innerY0 = Mth.sin(a0) * innerRadius;
+            float innerX1 = Mth.cos(a1) * innerRadius;
+            float innerY1 = Mth.sin(a1) * innerRadius;
 
-    private static void putLine(VertexConsumer builder, Matrix4f matrix, float fromX, float fromY, float fromZ, float toX, float toY, float toZ, int r, int g, int b, int a) {
-        builder.vertex(matrix, fromX, fromY, fromZ).color(r, g, b, a).normal(0, 1, 0).endVertex();
-        builder.vertex(matrix, toX, toY, toZ).color(r, g, b, a).normal(0, 1, 0).endVertex();
+            builder.vertex(matrix, outerX0, outerY0, 0.0F).color(r, g, b, alpha).endVertex();
+            builder.vertex(matrix, outerX1, outerY1, 0.0F).color(r, g, b, alpha).endVertex();
+            builder.vertex(matrix, innerX1, innerY1, 0.0F).color(r, g, b, alpha).endVertex();
+
+            builder.vertex(matrix, outerX0, outerY0, 0.0F).color(r, g, b, alpha).endVertex();
+            builder.vertex(matrix, innerX1, innerY1, 0.0F).color(r, g, b, alpha).endVertex();
+            builder.vertex(matrix, innerX0, innerY0, 0.0F).color(r, g, b, alpha).endVertex();
+        }
     }
 
     private record TargetInfo(Vec3 worldPos, float screenX, float screenY, boolean onScreen) {
