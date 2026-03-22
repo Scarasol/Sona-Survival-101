@@ -24,6 +24,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -56,6 +57,9 @@ public abstract class LivingEntityMixin extends Entity implements ILivingEntityA
 
     @Shadow
     public abstract double getAttributeValue(Attribute p_21134_);
+
+    @Shadow @Nullable
+    public abstract AttributeInstance getAttribute(Attribute p_21051_);
 
     @Shadow public abstract boolean hurt(DamageSource p_21016_, float p_21017_);
 
@@ -276,7 +280,7 @@ public abstract class LivingEntityMixin extends Entity implements ILivingEntityA
 
     @WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSource;getEntity()Lnet/minecraft/world/entity/Entity;"))
     private Entity warpLastHurtMob(DamageSource instance, Operation<Entity> operation) {
-        if (instance.getEntity() instanceof LivingEntity livingEntity && livingEntity.getAttribute(Attributes.FOLLOW_RANGE) != null && instance.isIndirect()) {
+        if (instance.getEntity() instanceof LivingEntity livingEntity && livingEntity.getAttribute(Attributes.FOLLOW_RANGE) != null && this.getAttribute(Attributes.FOLLOW_RANGE) != null && instance.isIndirect()) {
             if (livingEntity.hasEffect(SonaMobEffects.CAMOUFLAGE.get())) {
                 double distance = this.position().distanceTo(livingEntity.position());
                 if (livingEntity.hasEffect(SonaMobEffects.EXPOSURE.get())) {

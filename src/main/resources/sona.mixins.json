@@ -57,6 +57,7 @@
     "GuiMixin",
     "HumanoidArmorLayerMixin",
     "KeyboardHandlerMixin",
+    "KeyboardInputMixin",
     "LivingEntityRendererMixin",
     "LocalPlayerMixin",
     "RenderLayerMixin",

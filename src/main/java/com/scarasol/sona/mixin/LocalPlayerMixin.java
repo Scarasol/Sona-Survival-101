@@ -29,7 +29,6 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer {
 
     public LocalPlayerMixin(ClientLevel clientLevel, GameProfile gameProfile) {
         super(clientLevel, gameProfile);
-
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
