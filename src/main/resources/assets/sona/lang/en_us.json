@@ -5,6 +5,7 @@
   "command.sona.get_rot.success": "%s has an rot level of %s.",
   "command.sona.get_rust.success": "%s has an rust level of %s.",
   "command.sona.infection.close": "The infection system is close.",
+  "command.sona.indicator.success": "Spawned indicator at %s %s %s (range=%s, duration=%ss).",
   "command.sona.infection.uninfected": "The entity does not belong to the susceptible group.",
   "command.sona.injury.close": "The injury system is close.",
   "command.sona.modify_bandage.success": "The bandage level for %s has been modified to %s.",
@@ -79,7 +80,7 @@
   "tooltip.sona.rust.waxed": "Coated",
   "tooltip.sona.rust.waxed_remaining": "Coating durability: ",
   "subtitles.crate": "Crate Chest",
-  "subtitles.crate": "Groan",
+  "subtitles.laceration_loop": "Groan",
   "subtitles.slider_zipper_bag": "Warp Food",
   "subtitles.tinnitus": "Tinnitus"
 }

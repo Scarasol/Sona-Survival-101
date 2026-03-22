@@ -3,7 +3,7 @@ package com.scarasol.sona.event;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.scarasol.sona.SonaMod;
-import com.scarasol.sona.client.renderer.ExposureClientRenderer;
+import com.scarasol.sona.client.renderer.PositionIndicatorRenderer;
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.init.SonaMobEffects;
 import net.minecraft.client.Minecraft;
@@ -120,7 +120,7 @@ public class EffectEventHandler {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
         if (player != null) {
-            ExposureClientRenderer.renderGuiIndicators(event.getGuiGraphics(), minecraft.getFrameTime());
+            PositionIndicatorRenderer.renderGuiIndicators(event.getGuiGraphics(), minecraft.getFrameTime());
             if (player.hasEffect(SonaMobEffects.INFECTION.get()) || tick > 0) {
                 PoseStack poseStack = event.getGuiGraphics().pose();
                 Minecraft mc = Minecraft.getInstance();
@@ -155,7 +155,7 @@ public class EffectEventHandler {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
             return;
         }
-        ExposureClientRenderer.renderWorldHalos(event.getPoseStack(), event.getPartialTick());
+        PositionIndicatorRenderer.renderWorldHalos(event.getPoseStack(), event.getPartialTick());
     }
 
     @SubscribeEvent

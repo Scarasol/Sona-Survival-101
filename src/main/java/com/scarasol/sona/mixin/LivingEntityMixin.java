@@ -12,6 +12,7 @@ import com.scarasol.sona.init.SonaMobEffects;
 import com.scarasol.sona.manager.InjuryManager;
 import com.scarasol.sona.manager.InfectionManager;
 import com.scarasol.sona.manager.SoundManager;
+import com.scarasol.sona.util.SonaRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -342,6 +343,11 @@ public abstract class LivingEntityMixin extends Entity implements ILivingEntityA
                 setExposureAmplifier(getEffect(SonaMobEffects.EXPOSURE.get()).getAmplifier());
             } else {
                 setExposureAmplifier(-1);
+            }
+            if ((Object) this instanceof LivingEntity livingEntity && hasEffect(SonaMobEffects.EXPOSURE.get()) && gameTime % 10 == 0) {
+                int amplifier = getEffect(SonaMobEffects.EXPOSURE.get()).getAmplifier();
+                double renderRange = (amplifier + 1) * 16.0D;
+                SonaRenderer.emitPositionIndicator(level(), livingEntity.position().add(0, livingEntity.getBbHeight() * 0.6F, 0), renderRange, 14);
             }
             if (gameTime % 20 == 0) {
                 float laceration = getSona$laceration();

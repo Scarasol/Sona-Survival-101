@@ -8,14 +8,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.scarasol.sona.accessor.mixin.ILivingEntityAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -23,9 +21,8 @@ import org.joml.Matrix4f;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ExposureClientRenderer {
+public final class PositionIndicatorRenderer {
 
-    private static final double SEARCH_RADIUS = 96.0D;
     private static final float ARROW_ALPHA_MIN = 0.18F;
     private static final float ARROW_ALPHA_MAX = 0.45F;
     private static final float HALO_ALPHA_MAX = 0.52F;
@@ -34,7 +31,7 @@ public final class ExposureClientRenderer {
     private static final float INDICATOR_RING_RADIUS_FACTOR = 0.24F;
     private static final int RED = 0xFF3A3A;
 
-    private ExposureClientRenderer() {
+    private PositionIndicatorRenderer() {
     }
 
     public static void renderGuiIndicators(GuiGraphics guiGraphics, float partialTick) {
@@ -53,23 +50,21 @@ public final class ExposureClientRenderer {
         int width = minecraft.getWindow().getGuiScaledWidth();
         int height = minecraft.getWindow().getGuiScaledHeight();
         float ripple = getRippleProgress(player.level().getGameTime(), partialTick);
+        float alpha = getArrowAlpha(ripple);
+        if (alpha <= 0.0F) {
+            return;
+        }
+
+        float centerX = width * 0.5F;
+        float centerY = height * 0.5F;
+        float radius = Math.min(width, height) * INDICATOR_RING_RADIUS_FACTOR;
 
         for (TargetInfo target : targets) {
             if (target.onScreen) {
                 continue;
             }
-
-            float centerX = width * 0.5F;
-            float centerY = height * 0.5F;
             float angle = (float) Math.atan2(target.screenY, target.screenX);
-            float radius = Math.min(width, height) * INDICATOR_RING_RADIUS_FACTOR;
-            float alpha = getArrowAlpha(ripple);
-            if (alpha <= 0.0F) {
-                continue;
-            }
-            float arcHalfWidth = 0.11F;
-            float arrowLength = 18.0F;
-            renderRingArrow(guiGraphics.pose(), centerX, centerY, radius, angle, arcHalfWidth, arrowLength, alpha);
+            renderRingArrow(guiGraphics.pose(), centerX, centerY, radius, angle, 18.0F, alpha);
         }
     }
 
@@ -145,13 +140,14 @@ public final class ExposureClientRenderer {
         int width = Minecraft.getInstance().getWindow().getGuiScaledWidth();
         int height = Minecraft.getInstance().getWindow().getGuiScaledHeight();
         float aspect = (float) width / (float) height;
+        long gameTime = player.level().getGameTime();
 
-        for (LivingEntity entity : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(SEARCH_RADIUS))) {
-            if (!shouldHighlight(player, entity)) {
+        for (PositionIndicatorManager.Indicator indicator : PositionIndicatorManager.getActiveIndicators(gameTime)) {
+            if (player.distanceToSqr(indicator.pos()) > indicator.renderRange() * indicator.renderRange()) {
                 continue;
             }
 
-            Vec3 worldPos = entity.getPosition(partialTick).add(0, entity.getBbHeight() * 0.6F, 0);
+            Vec3 worldPos = indicator.pos();
             Vec3 relative = worldPos.subtract(camPos);
             float cameraX = (float) relative.dot(right);
             float cameraY = (float) relative.dot(up);
@@ -180,26 +176,6 @@ public final class ExposureClientRenderer {
         return targets;
     }
 
-    private static boolean shouldHighlight(Player player, LivingEntity entity) {
-        if (entity == player || !entity.isAlive() || entity.isAlliedTo(player)) {
-            return false;
-        }
-        if (!(entity instanceof ILivingEntityAccessor accessor)) {
-            return false;
-        }
-        int level = accessor.getExposureAmplifier();
-        if (level < 0) {
-            return false;
-        }
-
-        double renderRange = (level + 1) * 16.0D;
-        if (player.distanceToSqr(entity) > renderRange * renderRange) {
-            return false;
-        }
-
-        return !(player.isSpectator());
-    }
-
     private static float getRippleProgress(long gameTime, float partialTick) {
         float cycle = (gameTime + partialTick) * 0.02F;
         return cycle - Mth.floor(cycle);
@@ -213,7 +189,7 @@ public final class ExposureClientRenderer {
         return Mth.lerp(Mth.clamp(breath, 0.0F, 1.0F), ARROW_ALPHA_MIN, ARROW_ALPHA_MAX);
     }
 
-    private static void renderRingArrow(PoseStack poseStack, float centerX, float centerY, float radius, float angle, float arcHalfWidth, float arrowLength, float alpha) {
+    private static void renderRingArrow(PoseStack poseStack, float centerX, float centerY, float radius, float angle, float arrowLength, float alpha) {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableDepthTest();
@@ -249,7 +225,6 @@ public final class ExposureClientRenderer {
 
         List<float[]> points = new ArrayList<>();
 
-        // Top-left vertex -> tip. Control point is pulled toward the interior so the edge caves inward.
         for (int i = 0; i <= curveSegments; i++) {
             float t = (float) i / curveSegments;
             float x = quadratic(backLocalX, tipLocalX * 0.52F, tipLocalX, t);
@@ -257,7 +232,6 @@ public final class ExposureClientRenderer {
             points.add(toScreenPoint(centerX, centerY, radius, x, y, dirX, dirY, tangentX, tangentY));
         }
 
-        // Tip -> bottom-left vertex. Mirrored inward curve.
         for (int i = 1; i <= curveSegments; i++) {
             float t = (float) i / curveSegments;
             float x = quadratic(tipLocalX, tipLocalX * 0.52F, backLocalX, t);
@@ -265,7 +239,6 @@ public final class ExposureClientRenderer {
             points.add(toScreenPoint(centerX, centerY, radius, x, y, dirX, dirY, tangentX, tangentY));
         }
 
-        // Bottom-left -> top-left vertex. This edge is the "arc" side and bows inward toward the arrow center.
         for (int i = 1; i < curveSegments; i++) {
             float t = (float) i / curveSegments;
             float x = quadratic(backLocalX, tipLocalX * 0.22F, backLocalX, t);
@@ -321,27 +294,10 @@ public final class ExposureClientRenderer {
     }
 
     private static void putLine(VertexConsumer builder, Matrix4f matrix, float fromX, float fromY, float fromZ, float toX, float toY, float toZ, int r, int g, int b, int a) {
-        builder.vertex(matrix, fromX, fromY, fromZ)
-                .color(r, g, b, a)
-                .normal(0, 1, 0)
-                .endVertex();
-        builder.vertex(matrix, toX, toY, toZ)
-                .color(r, g, b, a)
-                .normal(0, 1, 0)
-                .endVertex();
+        builder.vertex(matrix, fromX, fromY, fromZ).color(r, g, b, a).normal(0, 1, 0).endVertex();
+        builder.vertex(matrix, toX, toY, toZ).color(r, g, b, a).normal(0, 1, 0).endVertex();
     }
 
-    private static final class TargetInfo {
-        private final Vec3 worldPos;
-        private final float screenX;
-        private final float screenY;
-        private final boolean onScreen;
-
-        private TargetInfo(Vec3 worldPos, float screenX, float screenY, boolean onScreen) {
-            this.worldPos = worldPos;
-            this.screenX = screenX;
-            this.screenY = screenY;
-            this.onScreen = onScreen;
-        }
+    private record TargetInfo(Vec3 worldPos, float screenX, float screenY, boolean onScreen) {
     }
 }

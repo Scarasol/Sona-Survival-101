@@ -19,6 +19,7 @@ public class NetworkHandler {
         PACKET_HANDLER.registerMessage(messageID++, SyncChatPacket.class, SyncChatPacket::encode, SyncChatPacket::decode, SyncChatPacket::handler);
         PACKET_HANDLER.registerMessage(messageID++, ChunkDataSyncPacket.class, ChunkDataSyncPacket::encode, ChunkDataSyncPacket::decode, ChunkDataSyncPacket::handler);
         PACKET_HANDLER.registerMessage(messageID++, SavedDataSyncPacket.class, SavedDataSyncPacket::encode, SavedDataSyncPacket::decode, SavedDataSyncPacket::handler);
+        PACKET_HANDLER.registerMessage(messageID++, PositionIndicatorPacket.class, PositionIndicatorPacket::encode, PositionIndicatorPacket::decode, PositionIndicatorPacket::handler);
     }
 
 }

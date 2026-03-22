@@ -1,0 +1,41 @@
+package com.scarasol.sona.client.renderer;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+public final class PositionIndicatorManager {
+
+    private static final List<Indicator> INDICATORS = new ArrayList<>();
+
+    private PositionIndicatorManager() {
+    }
+
+    public static void addIndicator(double x, double y, double z, double renderRange, int duration) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null) {
+            return;
+        }
+        Vec3 pos = new Vec3(x, y, z);
+        long expireAt = minecraft.level.getGameTime() + duration;
+        INDICATORS.removeIf(indicator -> indicator.pos.closerThan(pos, 0.25D));
+        INDICATORS.add(new Indicator(pos, renderRange, expireAt));
+    }
+
+    public static List<Indicator> getActiveIndicators(long gameTime) {
+        Iterator<Indicator> iterator = INDICATORS.iterator();
+        while (iterator.hasNext()) {
+            Indicator indicator = iterator.next();
+            if (indicator.expireAt <= gameTime) {
+                iterator.remove();
+            }
+        }
+        return List.copyOf(INDICATORS);
+    }
+
+    public record Indicator(Vec3 pos, double renderRange, long expireAt) {
+    }
+}

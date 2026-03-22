@@ -5,6 +5,7 @@
   "command.sona.get_rot.success": "%s的腐烂指数为%s。",
   "command.sona.get_rust.success": "%s的锈蚀指数为%s。",
   "command.sona.infection.close": "感染系统未开启。",
+  "command.sona.indicator.success": "已在 %s %s %s 生成指示器（范围=%s，持续时间=%s秒）。",
   "command.sona.infection.uninfected": "实体不属于易感群体。",
   "command.sona.injury.close": "受伤系统未开启。",
   "command.sona.modify_bandage.success": "%s的包扎指数已修改为%s。",

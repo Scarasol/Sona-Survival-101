@@ -11,6 +11,7 @@ import com.scarasol.sona.accessor.mixin.IServerLevelAccessor;
 import com.scarasol.sona.command.InfectionCommand;
 import com.scarasol.sona.command.InjuryCommand;
 import com.scarasol.sona.command.RotCommand;
+import com.scarasol.sona.command.SonaCommand;
 import com.scarasol.sona.command.RustCommand;
 import com.scarasol.sona.compat.lostcities.LostCitiesCompat;
 import com.scarasol.sona.configuration.CommonConfig;
@@ -170,6 +171,7 @@ public class ManagerEventHandler {
 
     @SubscribeEvent
     public static void registerCommand(RegisterCommandsEvent event) {
+        SonaCommand.registerCommand(event.getDispatcher());
         InfectionCommand.registerCommand(event.getDispatcher());
         InjuryCommand.registerInjuryCommand(event.getDispatcher());
         InjuryCommand.registerBandageCommand(event.getDispatcher());
