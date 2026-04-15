@@ -56,6 +56,8 @@
   "effect.sona.laceration.description": "目标行动时会使目标伤口撕裂，造成百分比伤害。",
   "effect.sona.maim": "重伤",
   "effect.sona.maim.description": "减少目标治疗效果与自然恢复。",
+  "effect.sona.neutrality": "中立",
+  "effect.sona.neutrality.description": "除HurtByTargetGoal外，其它目标选择全部停止。",
   "effect.sona.sliminess": "黏液",
   "effect.sona.sliminess.description": "目标被黏稠的液体包裹，行动速度大幅降低。可与燃烧、冰冻及腐蚀产生连锁反应。",
   "effect.sona.stun": "眩晕",

@@ -20,6 +20,8 @@ build
 # other
 eclipse
 run
+net
+.codex_tmp_mc_sources
 
 # Files from Forge MDK
 forge*changelog.txt

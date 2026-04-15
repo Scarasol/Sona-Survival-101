@@ -23,6 +23,7 @@ public class SonaMobEffects {
     public static final RegistryObject<MobEffect> INSANE = REGISTRY.register("insane", Insane::new);
     public static final RegistryObject<MobEffect> LACERATION = REGISTRY.register("laceration", () -> new PhysicalEffect(MobEffectCategory.HARMFUL, 16758465));
     public static final RegistryObject<MobEffect> MAIM = REGISTRY.register("maim", () -> new PhysicalEffect(MobEffectCategory.HARMFUL, 7997962));
+    public static final RegistryObject<MobEffect> NEUTRALITY = REGISTRY.register("neutrality", () -> new MobEffectBase(MobEffectCategory.NEUTRAL, 0x7F7F7F));
     public static final RegistryObject<MobEffect> SLIMINESS = REGISTRY.register("sliminess", Sliminess::new);
     public static final RegistryObject<MobEffect> STUN = REGISTRY.register("stun", Stun::new);
 

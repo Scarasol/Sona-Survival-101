@@ -6,6 +6,7 @@ import com.scarasol.sona.SonaMod;
 import com.scarasol.sona.client.renderer.PositionIndicatorRenderer;
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.entity.SoundDecoy;
+import com.scarasol.sona.event.SonaEventHooks;
 import com.scarasol.sona.init.SonaMobEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -43,6 +44,9 @@ public class EffectEventHandler {
             LivingEntity originalTarget = entity_buffer.getTarget();
             BlockPos targetPos = BlockPos.containing(livingEntity.getX(), livingEntity.getY(), livingEntity.getZ());
             BlockPos mobPos = BlockPos.containing(entity_buffer.getX(), entity_buffer.getY(), entity_buffer.getZ());
+            if (SonaEventHooks.shouldCheckNeutrality(entity_buffer, livingEntity)) {
+                return;
+            }
             if (entity_buffer instanceof Enemy && !(entity_buffer instanceof NeutralMob) && !(livingEntity instanceof SoundDecoy) && livingEntity.hasEffect(SonaMobEffects.EXPOSURE.get()) && (originalTarget == null || !originalTarget.isAlive())) {
                 double distance = targetPos.distSqr(mobPos);
                 double range = Math.pow(entity_buffer.getAttributeValue(Attributes.FOLLOW_RANGE) * (livingEntity.getEffect(SonaMobEffects.EXPOSURE.get()).getAmplifier() + 1) * 0.3, 2);

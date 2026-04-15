@@ -56,6 +56,8 @@
   "effect.sona.laceration.description": "Action tears open your wounds, causing you to take damage.",
   "effect.sona.maim": "Maim",
   "effect.sona.maim.description": "Reduces healing efficiency and natural regeneration.",
+  "effect.sona.neutrality": "Neutrality",
+  "effect.sona.neutrality.description": "Disables all target goals except HurtByTargetGoal.",
   "effect.sona.sliminess": "Sliminess",
   "effect.sona.sliminess.description": "Coats the target in sticky slime, greatly reducing movement speed. Reacts with Ignition, Frost, and Corrosion to trigger chain effects.",
   "effect.sona.stun": "Stun",
