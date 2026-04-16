@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.fml.ModList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -45,7 +46,7 @@ public abstract class EntityRenderDispatcherMixin {
             return;
         }
 
-        boolean isShaderActive = ShaderCompatUtil.isShaderActive();
+        boolean isShaderActive = ModList.get().isLoaded("oculus") && ShaderCompatUtil.isShaderActive();
 
         MultiBufferSource finalSource = renderType -> {
             // 1. 安全放行非多边形渲染 (线条、碰撞箱等)

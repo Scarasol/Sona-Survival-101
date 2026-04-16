@@ -137,6 +137,110 @@ public class SonaStructureFinder {
         return result;
     }
 
+    public static List<ResourceLocation>[] getAllStructureBySection(WorldGenLevel level, ChunkAccess chunkAccess) {
+        int minBuild = chunkAccess.getMinBuildHeight();
+        int maxBuild = chunkAccess.getMaxBuildHeight();
+        int sectionCount = (maxBuild - minBuild) / 16;
+        List<ResourceLocation>[] result = createSectionStructureLists(sectionCount);
+        if (sectionCount <= 0) {
+            return result;
+        }
+
+        ChunkPos cpos = chunkAccess.getPos();
+        ChunkAccess chunk = level.getChunk(cpos.x, cpos.z, ChunkStatus.STRUCTURE_REFERENCES, false);
+        if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.STRUCTURE_REFERENCES)) {
+            return result;
+        }
+
+        Map<Structure, StructureStart> candidates = collectStructureCandidates(level, chunk);
+        Registry<Structure> reg = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
+
+        for (Map.Entry<Structure, StructureStart> entry : candidates.entrySet()) {
+            Structure structure = entry.getKey();
+            StructureStart start = entry.getValue();
+            if (!start.isValid()) {
+                continue;
+            }
+
+            BoundingBox structureBox = start.getBoundingBox();
+            int firstSection = getSectionIndex(structureBox.minY(), minBuild, sectionCount);
+            int lastSection = getSectionIndex(structureBox.maxY(), minBuild, sectionCount);
+            ResourceLocation id = reg.getKey(structure);
+            if (id == null) {
+                continue;
+            }
+
+            for (int sectionIndex = firstSection; sectionIndex <= lastSection; sectionIndex++) {
+                BoundingBox sectionBox = getSectionBox(cpos, minBuild + sectionIndex * 16);
+                if (!structureBox.intersects(sectionBox)) {
+                    continue;
+                }
+                for (var piece : start.getPieces()) {
+                    if (piece.getBoundingBox().intersects(sectionBox)) {
+                        result[sectionIndex].add(id);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (ModList.get().isLoaded("lostcities")) {
+            int centerX = cpos.getMiddleBlockX();
+            int centerZ = cpos.getMiddleBlockZ();
+            for (int sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
+                ResourceLocation resourceLocation = LostCitiesCompat.findCityStructure(level, new BlockPos(centerX, minBuild + sectionIndex * 16, centerZ));
+                if (resourceLocation != null) {
+                    result[sectionIndex].add(resourceLocation);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<ResourceLocation>[] createSectionStructureLists(int sectionCount) {
+        List<ResourceLocation>[] result = (List<ResourceLocation>[]) new List[Math.max(0, sectionCount)];
+        for (int index = 0; index < result.length; index++) {
+            result[index] = Lists.newArrayList();
+        }
+        return result;
+    }
+
+    private static Map<Structure, StructureStart> collectStructureCandidates(WorldGenLevel level, ChunkAccess chunk) {
+        Map<Structure, StructureStart> candidates = Maps.newHashMap(chunk.getAllStarts());
+        for (Map.Entry<Structure, LongSet> e : chunk.getAllReferences().entrySet()) {
+            Structure structure = e.getKey();
+            LongSet refs = e.getValue();
+            LongIterator it = refs.iterator();
+            while (it.hasNext()) {
+                long packed = it.nextLong();
+                int sx = ChunkPos.getX(packed);
+                int sz = ChunkPos.getZ(packed);
+                ChunkAccess startChunk = level.getChunk(sx, sz, ChunkStatus.STRUCTURE_STARTS, false);
+                if (startChunk == null || !startChunk.getStatus().isOrAfter(ChunkStatus.STRUCTURE_STARTS)) {
+                    continue;
+                }
+                StructureStart start = startChunk.getStartForStructure(structure);
+                if (start != null && start.isValid()) {
+                    candidates.put(structure, start);
+                }
+            }
+        }
+        return candidates;
+    }
+
+    private static int getSectionIndex(int blockY, int minBuild, int sectionCount) {
+        int index = Math.floorDiv(blockY - minBuild, 16);
+        return Math.max(0, Math.min(sectionCount - 1, index));
+    }
+
+    private static BoundingBox getSectionBox(ChunkPos cpos, int minY) {
+        int minX = cpos.getMinBlockX();
+        int minZ = cpos.getMinBlockZ();
+        return new BoundingBox(minX, minY, minZ, minX + 15, minY + 15, minZ + 15);
+    }
+
 
 
     public static boolean structureCoversBlockPos(ServerLevel level, BlockPos blockPos, ResourceLocation id) {

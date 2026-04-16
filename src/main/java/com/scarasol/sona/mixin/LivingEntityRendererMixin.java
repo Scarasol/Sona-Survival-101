@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.fml.ModList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -62,7 +63,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
                 ResourceLocation resourcelocation = this.getTextureLocation(livingEntity);
 
                 // 【核心修改】：在这里引入光影检测
-                if (ShaderCompatUtil.isShaderActive()) {
+                if (ModList.get().isLoaded("oculus") && ShaderCompatUtil.isShaderActive()) {
                     cir.setReturnValue(RenderType.entityTranslucent(resourcelocation));
                 } else {
                     cir.setReturnValue(SonaRenderType.entityDither(resourcelocation));

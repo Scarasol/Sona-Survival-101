@@ -1,6 +1,5 @@
 package com.scarasol.sona.manager;
 
-import com.scarasol.sona.SonaMod;
 import com.scarasol.sona.accessor.IInfectionZoneManager;
 import com.scarasol.sona.accessor.mixin.IChunkAccessor;
 import com.scarasol.sona.accessor.mixin.ILevelChunkSection;
@@ -12,13 +11,17 @@ import com.scarasol.sona.util.SonaStructureFinder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Scarasol
@@ -49,6 +52,7 @@ public class ChunkSectionInfectionManager implements IInfectionZoneManager {
         }
         setZoneInfection(IChunkAccessor.fromLevelChunk(chunkAccess).getSonaCompoundTag(), infectionLevel, blockPos.getY() / 16, serverLevel.getGameTime());
         initializeChunkInfectionZone(level, chunkAccess, infectionLevel, new BlockPos(chunkPos.getMiddleBlockX(), surfaceHeight, chunkPos.getMiddleBlockZ()));
+        chunkAccess.setUnsaved(true);
         return infectionLevel;
     }
 
@@ -66,52 +70,76 @@ public class ChunkSectionInfectionManager implements IInfectionZoneManager {
         int centerX = chunkAccess.getPos().getMiddleBlockX();
         int centerZ = chunkAccess.getPos().getMiddleBlockZ();
         int[] heights = new int[sectionCount];
-        int[] structureInfections = new int[sectionCount];
+        int[] infectionSources = getStructureInfections(level, chunkAccess, sectionCount);
         int[] nonEmptyBlockCounts = new int[sectionCount];
 
         for (int index = 0; index < sectionCount; index++) {
             int height = minHeight + index * 16;
             heights[index] = height;
-            BlockPos blockPos = new BlockPos(centerX, height, centerZ);
             ILevelChunkSection chunkSection = ILevelChunkSection.fromLevelChunk(chunkAccess.getSection(chunkAccess.getSectionIndex(height)));
             nonEmptyBlockCounts[index] = chunkSection.getSonaNonEmptyBlockCount();
-            structureInfections[index] = calculateStructureInfection(level, blockPos);
         }
 
         int surfaceSectionHeight = Math.floorDiv(surfacePos.getY(), 16) * 16;
         int surfaceIndex = Math.max(0, Math.min(sectionCount - 1, (surfaceSectionHeight - minHeight) / 16));
-        structureInfections[surfaceIndex] = Math.max(structureInfections[surfaceIndex], infectionLevelInSurface);
+        infectionSources[surfaceIndex] = Math.max(infectionSources[surfaceIndex], infectionLevelInSurface);
 
-        int[] upwardInfections = propagateInfection(structureInfections, nonEmptyBlockCounts, surfaceIndex, true);
-        int[] downwardInfections = propagateInfection(structureInfections, nonEmptyBlockCounts, surfaceIndex, false);
+        int[] upwardInfections = propagateInfection(infectionSources, nonEmptyBlockCounts, true);
+        int[] downwardInfections = propagateInfection(infectionSources, nonEmptyBlockCounts, false);
 
         for (int index = 0; index < sectionCount; index++) {
             int infectionLevel = Math.max(upwardInfections[index], downwardInfections[index]);
             setZoneInfection(tag, SonaEventHooks.getInitChunkInfection(new BlockPos(centerX, heights[index], centerZ), level.getLevel(), infectionLevel), heights[index] / 16, gameTime);
         }
+        chunkAccess.setUnsaved(true);
     }
 
-    private int[] propagateInfection(int[] structureInfections, int[] nonEmptyBlockCounts, int startIndex, boolean ascending) {
-        int[] infections = new int[structureInfections.length];
-        int infectionLevel = Math.max(0, structureInfections[startIndex]);
-        infections[startIndex] = infectionLevel;
+    private int[] getStructureInfections(WorldGenLevel level, ChunkAccess chunkAccess, int sectionCount) {
+        int[] structureInfections = new int[sectionCount];
+        List<String> structuresInfo = CommonConfig.INFECTED_ZONE_STRUCTURE.get();
+        if (structuresInfo.isEmpty()) {
+            Arrays.fill(structureInfections, -1);
+            return structureInfections;
+        }
 
-        if (ascending) {
-            for (int index = startIndex + 1; index < structureInfections.length; index++) {
-                infectionLevel = calculatePropagatedInfection(infectionLevel, structureInfections[index], nonEmptyBlockCounts[index]);
-                infections[index] = infectionLevel;
+        List<ResourceLocation>[] structuresBySection = SonaStructureFinder.getAllStructureBySection(level, chunkAccess);
+        for (int index = 0; index < sectionCount; index++) {
+            structureInfections[index] = getStructureInfection(structuresBySection[index], structuresInfo);
+        }
+        return structureInfections;
+    }
+
+    private int getStructureInfection(List<ResourceLocation> structures, List<String> structuresInfo) {
+        if (structuresInfo.isEmpty() || structures.isEmpty()) {
+            return -1;
+        }
+        int infection = -1;
+        for (ResourceLocation resourceLocation : structures) {
+            int index = CommonConfig.findIndex(resourceLocation.toString(), structuresInfo);
+            if (index == -1) {
+                continue;
             }
-            for (int index = startIndex - 1; index >= 0; index--) {
-                infectionLevel = calculatePropagatedInfection(infectionLevel, structureInfections[index], nonEmptyBlockCounts[index]);
+            String[] info = structuresInfo.get(index).split(",");
+            if (info.length < 2) {
+                continue;
+            }
+            infection = Math.max(Integer.parseInt(info[1].trim()), infection);
+        }
+        return Math.min(infection, 100);
+    }
+
+    private int[] propagateInfection(int[] infectionSources, int[] nonEmptyBlockCounts, boolean ascending) {
+        int[] infections = new int[infectionSources.length];
+        if (ascending) {
+            int infectionLevel = 0;
+            for (int index = 0; index < infectionSources.length; index++) {
+                infectionLevel = calculatePropagatedInfection(infectionLevel, infectionSources[index], nonEmptyBlockCounts[index]);
                 infections[index] = infectionLevel;
             }
         } else {
-            for (int index = startIndex - 1; index >= 0; index--) {
-                infectionLevel = calculatePropagatedInfection(infectionLevel, structureInfections[index], nonEmptyBlockCounts[index]);
-                infections[index] = infectionLevel;
-            }
-            for (int index = startIndex + 1; index < structureInfections.length; index++) {
-                infectionLevel = calculatePropagatedInfection(infectionLevel, structureInfections[index], nonEmptyBlockCounts[index]);
+            int infectionLevel = 0;
+            for (int index = infectionSources.length - 1; index >= 0; index--) {
+                infectionLevel = calculatePropagatedInfection(infectionLevel, infectionSources[index], nonEmptyBlockCounts[index]);
                 infections[index] = infectionLevel;
             }
         }
@@ -132,16 +160,19 @@ public class ChunkSectionInfectionManager implements IInfectionZoneManager {
         if (chunkAccess != null) {
             CompoundTag tag = IChunkAccessor.fromLevelChunk(chunkAccess).getSonaCompoundTag();
             long lastUpdateTime = getZoneInfectionTime(tag);
+            String expression = CommonConfig.INFECTED_ZONE_INCREASEMENT.get();
             ChunkPos chunkOffset = chunkPosOffset(level, chunkPos);
             double x = chunkOffset.x * 16;
             double z = chunkOffset.z * 16;
             double distance = Math.sqrt(x * x + z * z);
             int day = (int) ((level.getGameTime() - lastUpdateTime) / 24000);
             if (day > 0) {
+                List<NeighborInfection> neighborInfections = expression.contains("A") ? getInitializedNeighborInfections(level, chunkPos) : List.of();
                 for (int i = chunkAccess.getMinBuildHeight(); i < chunkAccess.getMaxBuildHeight(); i += 16) {
-                    int infection = calculateInfectionZone(level, new BlockPos(chunkPos.getMiddleBlockX(), i, chunkPos.getMiddleBlockZ()), distance, lastUpdateTime);
+                    int infection = calculateInfectionZone(level, new BlockPos(chunkPos.getMiddleBlockX(), i, chunkPos.getMiddleBlockZ()), distance, lastUpdateTime, expression, neighborInfections);
                     setZoneInfection(tag, SonaEventHooks.getCalculateChunkInfection(chunkPos.getMiddleBlockPosition(i), level, getZoneInfection(tag, i / 16)) + infection, i / 16, level.getGameTime());
                 }
+                chunkAccess.setUnsaved(true);
             }
 
         }
@@ -149,13 +180,20 @@ public class ChunkSectionInfectionManager implements IInfectionZoneManager {
 
 
     public int calculateInfectionZone(ServerLevel level, BlockPos blockPos, double distance, long lastUpdateTime) {
-        int originLevel = getZoneInfection(level, blockPos, true);
         String expression = CommonConfig.INFECTED_ZONE_INCREASEMENT.get();
+        List<NeighborInfection> neighborInfections = expression.contains("A") ? getInitializedNeighborInfections(level, new ChunkPos(blockPos)) : List.of();
+        return calculateInfectionZone(level, blockPos, distance, lastUpdateTime, expression, neighborInfections);
+    }
+
+    private int calculateInfectionZone(ServerLevel level, BlockPos blockPos, double distance, long lastUpdateTime, String expression, List<NeighborInfection> neighborInfections) {
+        int originLevel = getZoneInfection(level, blockPos, true);
         int day = (int) ((level.getGameTime() - lastUpdateTime) / 24000);
         if (!expression.isEmpty() && day > 0) {
-            expression = expression.replaceAll("T", String.valueOf(day));
-            expression = expression.replaceAll("O", String.valueOf(originLevel));
-            expression = expression.replaceAll("A", String.valueOf(getAveInfectionZone(level, blockPos)));
+            expression = expression.replace("T", String.valueOf(day));
+            expression = expression.replace("O", String.valueOf(originLevel));
+            if (expression.contains("A")) {
+                expression = expression.replace("A", String.valueOf(getAveInfectionZone(level, blockPos.getY() / 16, neighborInfections)));
+            }
 
             expression = expression.replace("D", String.valueOf(distance));
             return (int) ExpressionParser.eval(expression);
@@ -169,6 +207,7 @@ public class ChunkSectionInfectionManager implements IInfectionZoneManager {
         if (chunkAccess != null) {
             IChunkAccessor chunkAccessor = IChunkAccessor.fromLevelChunk(chunkAccess);
             setZoneInfection(chunkAccessor.getSonaCompoundTag(), infectionLevel, blockPos.getY() / 16, level.getGameTime());
+            chunkAccess.setUnsaved(true);
         }
     }
 
@@ -217,15 +256,17 @@ public class ChunkSectionInfectionManager implements IInfectionZoneManager {
     @Override
     public double getAveInfectionZone(ServerLevel level, BlockPos blockPos) {
         ChunkPos chunkPos = new ChunkPos(blockPos);
+        return getAveInfectionZone(level, blockPos.getY() / 16, getInitializedNeighborInfections(level, chunkPos));
+    }
+
+    private double getAveInfectionZone(ServerLevel level, int height, List<NeighborInfection> neighborInfections) {
         double aveInfection = 0;
         int count = 0;
-        for (int dx = -1; dx < 2; dx++) {
-            for (int dz = -1; dz < 2; dz++) {
-                double chunkInfection = getAveInfectionZone(level, new ChunkPos(chunkPos.x + dx, chunkPos.z + dz), blockPos.getY() / 16);
-                if (chunkInfection >= 0) {
-                    aveInfection += chunkInfection;
-                    count += 3;
-                }
+        for (NeighborInfection neighborInfection : neighborInfections) {
+            double chunkInfection = getAveInfectionZone(level, neighborInfection, height);
+            if (chunkInfection >= 0) {
+                aveInfection += chunkInfection;
+                count++;
             }
         }
         if (count > 0) {
@@ -234,23 +275,35 @@ public class ChunkSectionInfectionManager implements IInfectionZoneManager {
         return 0;
     }
 
-    public double getAveInfectionZone(ServerLevel level, ChunkPos chunkPos, int height) {
-        ChunkAccess chunkAccess = SonaBlockUtil.getChunk(level, chunkPos);
-        double aveInfection = 0;
-        if (chunkAccess != null) {
-            for (int i = -1; i <= 1; i += 1) {
-                int heightTemp = height + i;
-                IChunkAccessor chunkAccessor = IChunkAccessor.fromLevelChunk(chunkAccess);
-                CompoundTag tag = chunkAccessor.getSonaCompoundTag();
-                if (!tag.contains(INFECTION_TAG_TIME)) {
-
-                    initializeInfectionZone(level, chunkPos.getMiddleBlockPosition(height));
+    private List<NeighborInfection> getInitializedNeighborInfections(ServerLevel level, ChunkPos chunkPos) {
+        List<NeighborInfection> neighborInfections = new ArrayList<>(9);
+        for (int dx = -1; dx < 2; dx++) {
+            for (int dz = -1; dz < 2; dz++) {
+                ChunkPos neighborChunkPos = new ChunkPos(chunkPos.x + dx, chunkPos.z + dz);
+                ChunkAccess chunkAccess = SonaBlockUtil.getChunk(level, neighborChunkPos);
+                if (chunkAccess != null) {
+                    CompoundTag tag = IChunkAccessor.fromLevelChunk(chunkAccess).getSonaCompoundTag();
+                    if (tag.contains(INFECTION_TAG_TIME)) {
+                        neighborInfections.add(new NeighborInfection(neighborChunkPos, tag));
+                    }
                 }
-                aveInfection += SonaEventHooks.getCalculateChunkInfection(chunkPos.getMiddleBlockPosition(height), level, getZoneInfection(tag, heightTemp));
             }
-            return aveInfection / 3;
         }
-        return -1;
+        return neighborInfections;
+    }
+
+    private double getAveInfectionZone(ServerLevel level, NeighborInfection neighborInfection, int height) {
+        double aveInfection = 0;
+        int count = 0;
+        for (int i = -1; i <= 1; i += 1) {
+            int heightTemp = height + i;
+            aveInfection += SonaEventHooks.getCalculateChunkInfection(neighborInfection.chunkPos().getMiddleBlockPosition(height * 16), level, getZoneInfection(neighborInfection.tag(), heightTemp));
+            count++;
+        }
+        return aveInfection / count;
+    }
+
+    private record NeighborInfection(ChunkPos chunkPos, CompoundTag tag) {
     }
 
     @Override
@@ -262,12 +315,9 @@ public class ChunkSectionInfectionManager implements IInfectionZoneManager {
             return blockInfection;
         }
 
-        double x = position.x;
-        double z = position.z;
-
         ChunkPos centerChunk = new ChunkPos(blockPos);
 
-        double sigma = 4.0D;
+        double sigma = 8.0D;
         double twoSigmaSq = 2.0D * sigma * sigma;
 
         double totalInf = 0.0D;
@@ -277,12 +327,7 @@ public class ChunkSectionInfectionManager implements IInfectionZoneManager {
             for (int dz = -1; dz <= 1; dz++) {
                 ChunkPos cp = new ChunkPos(centerChunk.x + dx, centerChunk.z + dz);
 
-                double cx = cp.getMiddleBlockX();
-                double cz = cp.getMiddleBlockZ();
-
-                double ddx = x - cx;
-                double ddz = z - cz;
-                double distSq = ddx * ddx + ddz * ddz;
+                double distSq = SonaBlockUtil.getMinDistanceSqrChunkToBlock(blockPos, cp);
 
                 double weight = Math.exp(-distSq / twoSigmaSq);
                 if (weight < 1.0E-6D) {

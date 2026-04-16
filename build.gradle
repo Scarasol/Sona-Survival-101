@@ -153,9 +153,10 @@ dependencies {
     implementation fg.deobf("curse.maven:lootr-361276:6961345")
     runtimeOnly fg.deobf("curse.maven:spark-361579:4738952")
     runtimeOnly fg.deobf("curse.maven:apocalypse-now-448410:6364603")
-    implementation fg.deobf("curse.maven:the-lost-cities-269024:7014353")
+    compileOnly fg.deobf("curse.maven:the-lost-cities-269024:7014353")
     runtimeOnly fg.deobf("curse.maven:embeddium-908741:5681725")
     runtimeOnly fg.deobf("curse.maven:pillagers-gun-948255:7667398")
+    compileOnly fg.deobf("curse.maven:oculus-581495:6020952")
     runtimeOnly fg.deobf("curse.maven:oculus-581495:6020952")
 
 

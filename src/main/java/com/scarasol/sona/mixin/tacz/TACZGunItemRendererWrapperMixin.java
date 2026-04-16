@@ -9,6 +9,7 @@ import com.tacz.guns.client.renderer.item.GunItemRendererWrapper;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fml.ModList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -47,7 +48,7 @@ public abstract class TACZGunItemRendererWrapperMixin {
             return originalRenderType;
         }
 
-        return ShaderCompatUtil.isShaderActive()
+        return ModList.get().isLoaded("oculus") && ShaderCompatUtil.isShaderActive()
                 ? RenderType.entityTranslucent(texture.get())
                 : SonaRenderType.entityDither(texture.get());
     }

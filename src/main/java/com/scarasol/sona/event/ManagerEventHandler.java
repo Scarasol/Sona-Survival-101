@@ -14,6 +14,7 @@ import com.scarasol.sona.command.InjuryCommand;
 import com.scarasol.sona.command.RotCommand;
 import com.scarasol.sona.command.SonaCommand;
 import com.scarasol.sona.command.RustCommand;
+import com.scarasol.sona.compat.ShaderCompatUtil;
 import com.scarasol.sona.compat.lostcities.LostCitiesCompat;
 import com.scarasol.sona.configuration.CommonConfig;
 import com.scarasol.sona.init.SonaSounds;
@@ -53,6 +54,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -67,6 +69,7 @@ import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -77,6 +80,10 @@ import static com.scarasol.sona.accessor.mixin.IChunkAccessor.COMPOUND_TAG_NAME;
  */
 @Mod.EventBusSubscriber
 public class ManagerEventHandler {
+    private static final float INFECTION_FOG_SMOOTHING_SPEED = 5.0F;
+    private static float infectionFogWeight = 0.0F;
+    private static long infectionFogLastUpdateNanos = 0L;
+    private static Vec3 infectionFogLastColor = Vec3.ZERO;
 
     @SubscribeEvent
     public static void onAttacked(LivingDamageEvent event) {
@@ -388,16 +395,26 @@ public class ManagerEventHandler {
             return;
         }
 
-        double infectionLevel = InfectionManager.getAveZoneInfectionInRender(level, event.getCamera().getPosition());
-
-        // 如果没有感染，直接返回，完全由原版接管雾气渲染
-        if (infectionLevel <= 0) {
+        Vec3 vec3 = event.getCamera().getPosition();
+        double infectionLevel = InfectionManager.getAveZoneInfectionInRender(level, vec3);
+        float targetWeight = Mth.clamp((float) (infectionLevel / 100.0D), 0.0F, 1.0F);
+        float weight = smoothInfectionFogWeight(targetWeight);
+        if (weight <= 0.001F) {
             return;
         }
 
+        Vec3 color = InfectionManager.getInfectionChunkFogColor(Vec3.ZERO, vec3, level);
+        if (color == null) {
+            return;
+        }
+        if (targetWeight > 0.001F) {
+            infectionFogLastColor = color;
+        } else {
+            color = infectionFogLastColor;
+        }
+//        System.out.println(InfectionManager.getZoneInfection(level, BlockPos.containing(vec3.x, vec3.y, vec3.z), true));
+        // 如果没有感染，直接返回，完全由原版接管雾气渲染
         // 将感染值转换为 0.0 到 1.0 的混合权重（假设 100 是最大影响值）
-        float weight = Mth.clamp((float) (infectionLevel / 100.0), 0.0F, 1.0F);
-
         // 获取当前（原版或其他模组处理后）的雾气距离
         float vanillaNear = event.getNearPlaneDistance();
         float vanillaFar = event.getFarPlaneDistance();
@@ -406,7 +423,7 @@ public class ManagerEventHandler {
         // 感染越深，近平面越趋近于 0（雾气贴脸）
         float newNear = Mth.lerp(weight, vanillaNear, 0.0F);
         // 感染越深，远平面越趋近于较近的距离（比如原版能见度缩减到只剩 5% 或者你原来的公式）
-        float newFar = Mth.lerp(weight, vanillaFar, vanillaFar * (1.0F - weight));
+        float newFar = Mth.lerp(weight, vanillaFar, vanillaFar * 0.05F);
 
         event.setNearPlaneDistance(newNear);
         event.setFarPlaneDistance(newFar);
@@ -415,9 +432,68 @@ public class ManagerEventHandler {
         if (weight > 0.3F) {
             event.setFogShape(FogShape.SPHERE);
         }
-
+        RenderSystem.setShaderFogColor((float)color.x, (float)color.y, (float)color.z, Mth.clamp(weight * 0.35F, 0.0F, 0.35F));
         // 取消原版的距离设定，应用我们修改后的距离
         event.setCanceled(true);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static float smoothInfectionFogWeight(float targetWeight) {
+        long now = System.nanoTime();
+        if (infectionFogLastUpdateNanos == 0L) {
+            infectionFogLastUpdateNanos = now;
+            infectionFogWeight = targetWeight;
+            return infectionFogWeight;
+        }
+
+        float deltaSeconds = Math.min((now - infectionFogLastUpdateNanos) / 1_000_000_000.0F, 1.0F);
+        infectionFogLastUpdateNanos = now;
+
+        float alpha = 1.0F - (float) Math.exp(-INFECTION_FOG_SMOOTHING_SPEED * deltaSeconds);
+        infectionFogWeight = Mth.lerp(alpha, infectionFogWeight, targetWeight);
+        if (targetWeight <= 0.001F && infectionFogWeight <= 0.001F) {
+            infectionFogWeight = 0.0F;
+        }
+        return infectionFogWeight;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void resetInfectionFogSmoothing() {
+        infectionFogWeight = 0.0F;
+        infectionFogLastUpdateNanos = 0L;
+        infectionFogLastColor = Vec3.ZERO;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @SubscribeEvent
+    public static void onRenderInfectionShaderOverlay(RenderGuiEvent.Pre event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        ClientLevel level = minecraft.level;
+        if (level == null || !InfectionManager.canChunkInfection(level) || !ModList.get().isLoaded("oculus") || !ShaderCompatUtil.isShaderActive()) {
+            return;
+        }
+
+        Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
+        double infectionLevel = InfectionManager.getAveZoneInfectionInRender(level, cameraPos);
+        if (infectionLevel <= 0) {
+            return;
+        }
+
+        Vec3 color = InfectionManager.getInfectionChunkFogColor(new Vec3(0, 0, 0), cameraPos, level);
+        if (color == null) {
+            return;
+        }
+
+        float alpha = Mth.clamp((float) (infectionLevel / 100.0D) * 0.35F, 0.0F, 0.35F);
+        int argb = ((int) (alpha * 255.0F) << 24)
+                | ((int) (Mth.clamp((float) color.x, 0.0F, 1.0F) * 255.0F) << 16)
+                | ((int) (Mth.clamp((float) color.y, 0.0F, 1.0F) * 255.0F) << 8)
+                | (int) (Mth.clamp((float) color.z, 0.0F, 1.0F) * 255.0F);
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        event.getGuiGraphics().fill(0, 0, event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight(), argb);
+        RenderSystem.disableBlend();
     }
 
 //    @SubscribeEvent
@@ -463,6 +539,7 @@ public class ManagerEventHandler {
     @SubscribeEvent
     public static void onClientLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         PositionIndicatorManager.clear();
+        resetInfectionFogSmoothing();
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -470,6 +547,7 @@ public class ManagerEventHandler {
     public static void onClientLevelUnload(LevelEvent.Unload event) {
         if (event.getLevel() instanceof ClientLevel) {
             PositionIndicatorManager.clear();
+            resetInfectionFogSmoothing();
         }
     }
 
@@ -497,6 +575,8 @@ public class ManagerEventHandler {
 //        if (event.isCancelable())
 //            event.setCanceled(true);
 //    }
+
+
 
 
 }

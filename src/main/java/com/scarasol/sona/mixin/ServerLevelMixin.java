@@ -106,6 +106,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevelAcce
                     IChunkAccessor chunkAccessor = IChunkAccessor.fromLevelChunk(levelChunk);
                     if (chunkAccessor.isNeedSync()) {
                         chunkAccessor.syncChunkData((ServerLevel) ((Object)this), chunkPos);
+                        chunkAccessor.setNeedSync(false);
                     }
                 }
             }
