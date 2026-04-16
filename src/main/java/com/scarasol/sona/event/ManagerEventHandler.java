@@ -3,7 +3,7 @@ package com.scarasol.sona.event;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.scarasol.sona.SonaMod;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.scarasol.sona.accessor.mixin.IBaseContainerBlockEntityAccessor;
 import com.scarasol.sona.accessor.mixin.IChunkAccessor;
 import com.scarasol.sona.accessor.mixin.ILivingEntityAccessor;
@@ -397,7 +397,7 @@ public class ManagerEventHandler {
 
         Vec3 vec3 = event.getCamera().getPosition();
         double infectionLevel = InfectionManager.getAveZoneInfectionInRender(level, vec3);
-        float targetWeight = Mth.clamp((float) (infectionLevel / 100.0D), 0.0F, 1.0F);
+        float targetWeight = getVisualInfectionFogWeight(infectionLevel);
         float weight = smoothInfectionFogWeight(targetWeight);
         if (weight <= 0.001F) {
             return;
@@ -438,6 +438,12 @@ public class ManagerEventHandler {
     }
 
     @OnlyIn(Dist.CLIENT)
+    private static float getVisualInfectionFogWeight(double infectionLevel) {
+        float weight = Mth.clamp((float) (infectionLevel / 100.0D), 0.0F, 1.0F);
+        return weight * weight * (3.0F - 2.0F * weight);
+    }
+
+    @OnlyIn(Dist.CLIENT)
     private static float smoothInfectionFogWeight(float targetWeight) {
         long now = System.nanoTime();
         if (infectionFogLastUpdateNanos == 0L) {
@@ -466,34 +472,113 @@ public class ManagerEventHandler {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
-    public static void onRenderInfectionShaderOverlay(RenderGuiEvent.Pre event) {
+    public static void onRenderInfectionFogOverlay(RenderGuiEvent.Pre event) {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
-        if (level == null || !InfectionManager.canChunkInfection(level) || !ModList.get().isLoaded("oculus") || !ShaderCompatUtil.isShaderActive()) {
+        if (level == null || !InfectionManager.canChunkInfection(level)) {
             return;
         }
 
         Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
         double infectionLevel = InfectionManager.getAveZoneInfectionInRender(level, cameraPos);
-        if (infectionLevel <= 0) {
+        float weight = Math.max(infectionFogWeight, getVisualInfectionFogWeight(infectionLevel));
+        if (weight <= 0.001F) {
             return;
         }
 
-        Vec3 color = InfectionManager.getInfectionChunkFogColor(new Vec3(0, 0, 0), cameraPos, level);
+        Vec3 color = InfectionManager.getInfectionChunkFogColor(Vec3.ZERO, cameraPos, level);
         if (color == null) {
             return;
         }
 
-        float alpha = Mth.clamp((float) (infectionLevel / 100.0D) * 0.35F, 0.0F, 0.35F);
-        int argb = ((int) (alpha * 255.0F) << 24)
-                | ((int) (Mth.clamp((float) color.x, 0.0F, 1.0F) * 255.0F) << 16)
-                | ((int) (Mth.clamp((float) color.y, 0.0F, 1.0F) * 255.0F) << 8)
-                | (int) (Mth.clamp((float) color.z, 0.0F, 1.0F) * 255.0F);
+        boolean shaderPackActive = ModList.get().isLoaded("oculus") && ShaderCompatUtil.isShaderActive();
+        renderInfectionFogOverlay(event, level, color, weight, shaderPackActive);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void renderInfectionFogOverlay(RenderGuiEvent.Pre event, ClientLevel level, Vec3 color, float weight, boolean shaderPackActive) {
+        int width = event.getWindow().getGuiScaledWidth();
+        int height = event.getWindow().getGuiScaledHeight();
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+
+        float time = level.getGameTime() + Minecraft.getInstance().getFrameTime();
+        float washAlpha = Mth.clamp(weight * (shaderPackActive ? 0.18F : 0.035F), 0.0F, shaderPackActive ? 0.22F : 0.05F);
+        float vignetteAlpha = Mth.clamp(weight * 0.11F, 0.0F, 0.13F);
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        event.getGuiGraphics().fill(0, 0, event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight(), argb);
+        RenderSystem.depthMask(false);
+
+        if (washAlpha > 0.001F) {
+            event.getGuiGraphics().fill(0, 0, width, height, argbFromColor(color, washAlpha));
+        }
+        if (vignetteAlpha > 0.001F) {
+            renderInfectionFogVignette(event, color, width, height, vignetteAlpha);
+        }
+        renderInfectionFogSpores(event, color, width, height, time, weight);
+
+        RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void renderInfectionFogVignette(RenderGuiEvent.Pre event, Vec3 color, int width, int height, float alpha) {
+        int edgeHeight = Math.max(16, height / 4);
+        int edgeColor = argbFromColor(color, alpha);
+        event.getGuiGraphics().fillGradient(0, 0, width, edgeHeight, edgeColor, 0);
+        event.getGuiGraphics().fillGradient(0, height - edgeHeight, width, height, 0, edgeColor);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void renderInfectionFogSpores(RenderGuiEvent.Pre event, Vec3 color, int width, int height, float time, float weight) {
+        int sporeCount = Mth.floor(Mth.lerp(weight, 16.0F, 54.0F));
+        Vec3 sporeColor = new Vec3(
+                Mth.clamp((float) color.x * 0.8F + 0.35F, 0.0F, 1.0F),
+                Mth.clamp((float) color.y * 0.8F + 0.35F, 0.0F, 1.0F),
+                Mth.clamp((float) color.z * 0.8F + 0.35F, 0.0F, 1.0F)
+        );
+        for (int i = 0; i < sporeCount; i++) {
+            float baseX = hash01(i, 11);
+            float baseY = hash01(i, 29);
+            float speed = Mth.lerp(hash01(i, 47), 0.0014F, 0.0042F);
+            float x = fract(baseX + time * speed + Mth.sin(time * 0.015F + i) * 0.012F) * width;
+            float y = fract(baseY - time * speed * 0.72F + Mth.cos(time * 0.011F + i * 0.7F) * 0.010F) * height;
+            int size = 1 + Mth.floor(hash01(i, 71) * 4.0F);
+            int glowSize = size + 2;
+            float pulse = 0.65F + 0.35F * Mth.sin(time * 0.09F + i * 1.7F);
+            float alpha = Mth.clamp(weight * Mth.lerp(hash01(i, 97), 0.08F, 0.24F) * pulse, 0.0F, 0.26F);
+            renderSmoothInfectionSpore(event, x, y, size, glowSize, argbFromColor(sporeColor, alpha * 0.22F), argbFromColor(sporeColor, alpha));
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void renderSmoothInfectionSpore(RenderGuiEvent.Pre event, float x, float y, int size, int glowSize, int glowColor, int coreColor) {
+        int pixelX = Mth.floor(x);
+        int pixelY = Mth.floor(y);
+        PoseStack poseStack = event.getGuiGraphics().pose();
+        poseStack.pushPose();
+        poseStack.translate(x - pixelX, y - pixelY, 0.0F);
+        event.getGuiGraphics().fill(pixelX - 1, pixelY - 1, pixelX + glowSize, pixelY + glowSize, glowColor);
+        event.getGuiGraphics().fill(pixelX, pixelY, pixelX + size, pixelY + size, coreColor);
+        poseStack.popPose();
+    }
+
+    private static int argbFromColor(Vec3 color, float alpha) {
+        return ((int) (Mth.clamp(alpha, 0.0F, 1.0F) * 255.0F) << 24)
+                | ((int) (Mth.clamp((float) color.x, 0.0F, 1.0F) * 255.0F) << 16)
+                | ((int) (Mth.clamp((float) color.y, 0.0F, 1.0F) * 255.0F) << 8)
+                | (int) (Mth.clamp((float) color.z, 0.0F, 1.0F) * 255.0F);
+    }
+
+    private static float hash01(int index, int salt) {
+        return fract(Mth.sin(index * 12.9898F + salt * 78.233F) * 43758.547F);
+    }
+
+    private static float fract(float value) {
+        return value - Mth.floor(value);
     }
 
 //    @SubscribeEvent
