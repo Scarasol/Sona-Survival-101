@@ -24,6 +24,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
         if (mixinClassName.contains("tacz")) return getClass("com.tacz.guns.GunMod");
         if (mixinClassName.contains("sbw")) return getClass("com.atsuishio.superbwarfare.Mod");
         if (mixinClassName.contains("geckolib")) return getClass("software.bernie.geckolib.GeckoLib");
+        if (mixinClassName.contains("embeddium")) return getClass("me.jellysquid.mods.sodium.client.gl.shader.ShaderLoader");
 //        if (mixinClassName.contains("sophisticatedcore")) return getClass("net.p3pp3rf1y.sophisticatedcore.SophisticatedCore");
 //        if (mixinClassName.contains("sophisticatedbackpacks")) return getClass("net.p3pp3rf1y.sophisticatedbackpacks.SophisticatedBackpacks");
         return true;

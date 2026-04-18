@@ -16,6 +16,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+/**
+ * @author Scarasol
+ */
 @Mixin(VehicleFireMessage.class)
 public abstract class VehicleFireMessageMixin {
 
