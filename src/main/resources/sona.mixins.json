@@ -65,6 +65,7 @@
     "tacz.TACZAttachmentRenderMixin",
     "tacz.TACZBedrockPartMixin",
     "tacz.TACZGunItemRendererWrapperMixin",
+    "embeddium.SodiumShaderLoaderMixin",
     "geckolib.GeoEntityRendererMixin",
     "geckolib.GeoItemRendererMixin"
   ],
