@@ -21,6 +21,8 @@ build
 eclipse
 run
 net
+/assets
+/.codex-reference
 .codex_tmp_mc_sources
 
 # Files from Forge MDK
