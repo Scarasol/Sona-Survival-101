@@ -25,7 +25,7 @@ public abstract class ModernKineticGunScriptAPIMixin {
     @Shadow private ItemStack itemStack;
 
     @Inject(method = "lambda$shootOnce$2", at = @At(value = "INVOKE", target = "Lcom/tacz/guns/network/NetworkHandler;sendToTrackingEntity(Ljava/lang/Object;Lnet/minecraft/world/entity/Entity;)V"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void onShoot(boolean consumeAmmo, GunData gunData, int bulletAmount, BulletData bulletData, IGunOperator gunOperator, float processedSpeed, float finalInaccuracy, int soundDistance, boolean useSilenceSound, CallbackInfoReturnable<Boolean> cir, boolean fire) {
+    private void onShoot(boolean consumeAmmo, GunData gunData, int bulletAmount, BulletData bulletData, IGunOperator gunOperator, float shotDamageMultiplier, float processedSpeed, float inaccuracy, int soundDistance, boolean useSilenceSound, CallbackInfoReturnable<Boolean> cir, boolean fire) {
         if (this.itemStack.hasTag() && CommonConfig.GUN_SOUND_WHITELIST.get().contains(this.itemStack.getTag().getString("GunId"))) {
             return;
         }

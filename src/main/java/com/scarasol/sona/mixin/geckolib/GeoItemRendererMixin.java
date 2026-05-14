@@ -13,14 +13,10 @@ import com.scarasol.sona.mixin.TextureStateShardAccessor;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
@@ -28,16 +24,15 @@ import software.bernie.geckolib.renderer.GeoItemRenderer;
 import java.util.Optional;
 
 @Pseudo
-@Mixin(value = GeoItemRenderer.class, remap = false)
+@Mixin(value = GeoItemRenderer.class)
 public abstract class GeoItemRendererMixin<T extends net.minecraft.world.item.Item & GeoAnimatable> {
 
-    @Shadow protected ItemStack currentItemStack;
-
     @WrapOperation(
-            method = "renderByItem",
+            method = "renderByItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lsoftware/bernie/geckolib/renderer/GeoItemRenderer;getRenderType(Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/client/renderer/MultiBufferSource;F)Lnet/minecraft/client/renderer/RenderType;"
+                    target = "Lsoftware/bernie/geckolib/renderer/GeoItemRenderer;getRenderType(Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/client/renderer/MultiBufferSource;F)Lnet/minecraft/client/renderer/RenderType;",
+                    remap = false
             )
     )
     private RenderType sona$useCamouflageRenderType(
@@ -53,49 +48,13 @@ public abstract class GeoItemRendererMixin<T extends net.minecraft.world.item.It
     }
 
     @WrapOperation(
-            method = "renderInGui",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lsoftware/bernie/geckolib/renderer/GeoItemRenderer;getRenderType(Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/client/renderer/MultiBufferSource;F)Lnet/minecraft/client/renderer/RenderType;"
-            )
-    )
-    private RenderType sona$useCamouflageRenderTypeInGui(
-            GeoItemRenderer<T> instance,
-            GeoAnimatable animatable,
-            ResourceLocation texture,
-            MultiBufferSource bufferSource,
-            float partialTick,
-            Operation<RenderType> original
-    ) {
-        RenderType originalType = original.call(instance, animatable, texture, bufferSource, partialTick);
-        return sona$selectCamouflageRenderType(originalType);
-    }
-
-    @WrapOperation(
-            method = "renderByItem",
+            method = "renderByItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;getFoilBufferDirect(Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/renderer/RenderType;ZZ)Lcom/mojang/blaze3d/vertex/VertexConsumer;"
             )
     )
     private VertexConsumer sona$wrapCamouflageItemBuffer(
-            MultiBufferSource bufferSource,
-            RenderType renderType,
-            boolean hasCrumbling,
-            boolean hasFoil,
-            Operation<VertexConsumer> original
-    ) {
-        return sona$wrapBuffer(original, bufferSource, renderType, hasCrumbling, hasFoil);
-    }
-
-    @WrapOperation(
-            method = "renderInGui",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;getFoilBufferDirect(Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/renderer/RenderType;ZZ)Lcom/mojang/blaze3d/vertex/VertexConsumer;"
-            )
-    )
-    private VertexConsumer sona$wrapCamouflageGuiBuffer(
             MultiBufferSource bufferSource,
             RenderType renderType,
             boolean hasCrumbling,

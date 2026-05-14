@@ -16,14 +16,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.function.Supplier;
+
 /**
  * @author Scarasol
  */
-@Mixin(VehicleFireMessage.class)
+@Mixin(value = VehicleFireMessage.class)
 public abstract class VehicleFireMessageMixin {
 
-    @Inject(method = "lambda$handler$0", at = @At(value = "INVOKE", target = "Lcom/atsuishio/superbwarfare/entity/vehicle/base/VehicleEntity;vehicleShoot(Lnet/minecraft/world/entity/LivingEntity;Ljava/util/UUID;Lnet/minecraft/world/phys/Vec3;)V"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private static void onHandler(NetworkEvent.Context context, VehicleFireMessage message, CallbackInfo ci, ServerPlayer player, VehicleEntity vehicle, Entity patt1891$temp) {
+    @Inject(method = "handler", at = @At(value = "INVOKE", target = "Lcom/atsuishio/superbwarfare/entity/vehicle/base/VehicleEntity;vehicleShoot(Lnet/minecraft/world/entity/LivingEntity;Ljava/util/UUID;Lnet/minecraft/world/phys/Vec3;)V"), locals = LocalCapture.CAPTURE_FAILSOFT, remap = false)
+    private void onHandler(Supplier<NetworkEvent.Context> $this$handler, CallbackInfo ci, ServerPlayer player, VehicleEntity vehicle, Entity var4) {
         if (CommonConfig.GUN_SOUND_ATTRACT.get()) {
             SoundManager.addSoundEffect(player, 40, CommonConfig.FIRE_EXPOSURE.get() - 1);
         }

@@ -1,16 +1,13 @@
 package com.scarasol.sona.mixin.geckolib;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.scarasol.sona.accessor.mixin.ILivingEntityAccessor;
 import com.scarasol.sona.client.renderer.SonaRenderType;
 import com.scarasol.sona.compat.geckolib.GeoInfectionLayer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,16 +24,16 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
  * @author Scarasol
  */
 @Pseudo
-@Mixin(value = GeoEntityRenderer.class, remap = false)
+@Mixin(value = GeoEntityRenderer.class)
 public abstract class GeoEntityRendererMixin<T extends Entity & GeoAnimatable> extends EntityRenderer<T> implements GeoRenderer<T> {
 
-    @Shadow public abstract GeoEntityRenderer<T> addRenderLayer(GeoRenderLayer<T> renderLayer);
+    @Shadow(remap = false) public abstract GeoEntityRenderer<T> addRenderLayer(GeoRenderLayer<T> renderLayer);
 
     protected GeoEntityRendererMixin(EntityRendererProvider.Context context) {
         super(context);
     }
 
-    @Inject(method = "render", cancellable = true, at = @At("HEAD"))
+    @Inject(method = "render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", cancellable = true, at = @At("HEAD"))
     private void sona$preRender(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, CallbackInfo ci) {
 
         if (entity instanceof ILivingEntityAccessor livingEntityAccessor) {
@@ -55,14 +52,14 @@ public abstract class GeoEntityRendererMixin<T extends Entity & GeoAnimatable> e
         }
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
+    @Inject(method = "render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("TAIL"))
     private void sona$postRender(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, CallbackInfo ci) {
         // 清理线程状态，确保不污染其他渲染
         SonaRenderType.camoAlpha.remove();
     }
 
-    @Inject(method = "<init>(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;Lsoftware/bernie/geckolib/model/GeoModel;)V", at = @At("TAIL"))
+    @Inject(method = "<init>(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;Lsoftware/bernie/geckolib/model/GeoModel;)V", at = @At("TAIL"), remap = false)
     private void sona$geoEntityRenderer(EntityRendererProvider.Context renderManager, GeoModel model, CallbackInfo ci) {
-        addRenderLayer(new GeoInfectionLayer(this));
+        addRenderLayer(new GeoInfectionLayer<>(this));
     }
 }

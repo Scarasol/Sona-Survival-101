@@ -140,11 +140,12 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     implementation fg.deobf("curse.maven:travelers-backpack-321117:7573110")
-    implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:7745481")
+    implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:8055552-sources-8055584")
     runtimeOnly fg.deobf("curse.maven:no-chat-reports-634062:4610474")
     implementation fg.deobf("curse.maven:curios-309927:6418456")
-    implementation fg.deobf("curse.maven:geckolib-388172:7025129")
-    implementation fg.deobf("curse.maven:superb-warfare-1218165:7292685")
+    implementation fg.deobf("curse.maven:geckolib-388172:7553267")
+    implementation fg.deobf("curse.maven:kotlin-for-forge-351264:7291067")
+    implementation fg.deobf("curse.maven:superb-warfare-1218165:8046997-sources-8048628")
     runtimeOnly fg.deobf("curse.maven:jade-324717:6855440")
     runtimeOnly fg.deobf("curse.maven:just-enough-effect-descriptions-jeed-532286:6172935")
     implementation fg.deobf("curse.maven:jei-238222:7037120")
@@ -153,11 +154,10 @@ dependencies {
     implementation fg.deobf("curse.maven:lootr-361276:6961345")
     runtimeOnly fg.deobf("curse.maven:spark-361579:4738952")
     runtimeOnly fg.deobf("curse.maven:apocalypse-now-448410:6364603")
-    compileOnly fg.deobf("curse.maven:the-lost-cities-269024:7014353")
+    implementation fg.deobf("curse.maven:the-lost-cities-269024:7014353")
     runtimeOnly fg.deobf("curse.maven:embeddium-908741:5681725")
     runtimeOnly fg.deobf("curse.maven:pillagers-gun-948255:7667398")
     compileOnly fg.deobf("curse.maven:oculus-581495:6020952")
-    runtimeOnly fg.deobf("curse.maven:oculus-581495:6020952")
 
 
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
@@ -223,6 +223,11 @@ tasks.named('jar', Jar).configure {
 
     // This is the preferred method to reobfuscate your jar file
     finalizedBy 'reobfJar'
+}
+
+tasks.register('sourcesJar', Jar) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
 }
 
 // However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing:

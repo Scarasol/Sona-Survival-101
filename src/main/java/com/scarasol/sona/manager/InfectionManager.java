@@ -259,6 +259,11 @@ public class InfectionManager {
         if (entityToSpawn == null) {
             return;
         }
+        entityToSpawn.setPos(livingEntity.getX(), livingEntity.getY(), livingEntity.getZ());
+        if (livingEntity.level() instanceof ServerLevel serverLevel && entityToSpawn instanceof Mob mob) {
+            mob.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(entityToSpawn.blockPosition()), MobSpawnType.CONVERSION, null, null);
+            mob.setPersistenceRequired();
+        }
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             entityToSpawn.setItemSlot(slot, livingEntity.getItemBySlot(slot));
             livingEntity.setItemSlot(slot, ItemStack.EMPTY);
@@ -267,7 +272,6 @@ public class InfectionManager {
             }
         }
 
-        entityToSpawn.setPos(livingEntity.getX(), livingEntity.getY(), livingEntity.getZ());
         livingEntity.level().addFreshEntity(entityToSpawn);
     }
 
