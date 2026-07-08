@@ -10,7 +10,7 @@ import java.util.List;
 public final class PositionIndicatorManager {
 
     private static final List<Indicator> INDICATORS = new ArrayList<>();
-    private static final double MIN_RENDER_DISTANCE_SQR = 64.0D;
+    private static final double MIN_RENDER_DISTANCE_SQR = 576.0D;
 
     private PositionIndicatorManager() {
     }
